@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'wikiserver.apps.WikiserverConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -78,7 +79,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'wikiserver',
         'USER': 'geordy',
-        'PASSWORD': '#Stays0n3arth!',
+        'PASSWORD': 'Appl3B3ar',
         'HOST': 'localhost',
         'PORT': '',
     }
