@@ -1,0 +1,10 @@
+{% extends 'wikiserver/base.html' %}
+{% block 'body' %}
+
+{% if id %}
+    <p>Viewing page {{id}}</p>
+{% else %}
+    <p>I don't know.</p>
+{% endif %}
+
+{% endblock %}

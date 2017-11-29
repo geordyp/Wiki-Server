@@ -1,0 +1,10 @@
+{% extends 'wikiserver/base.html' %}
+{% block 'body' %}
+
+{% if name %}
+    <p>What up tho {{name}}</p>
+{% else %}
+    <p>No name given.</p>
+{% endif %}
+
+{% endblock %}

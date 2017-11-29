@@ -2,12 +2,13 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render
-from django.http import HttpResponse
 
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the wiki index.")
+def home(request):
+    context = {'name':'geordy williams'}
+    return render(request, 'wikiserver/home.html', context)
 
 
 def page(request, page_id):
-    return HttpResponse("You're looking at page %s." % page_id)
+    context = {'id':page_id}
+    return render(request, 'wikiserver/page.html', context)
