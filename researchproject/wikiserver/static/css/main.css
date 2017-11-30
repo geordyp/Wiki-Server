@@ -1,0 +1,36 @@
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.header-bar {
+  width: 100%;
+  height: 20px;
+  padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: lightblue;
+}
+
+.title {
+  width: calc(100% - 200px);
+  float: left;
+}
+
+.btns {
+  width: 200px;
+  float: right;
+}
+
+.btn {
+  width: auto;
+  display: inline-block;
+  float: right;
+  margin-right: 20px;
+}
+
+.content {
+  position: relative;
+  top: 40px;
+}

@@ -1,9 +1,28 @@
-<html>
+{% load staticfiles %}
+
+<!doctype html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+  <title>Wiki Server</title>
 </head>
-<body style="padding:0; margin:0;">
-  <div style="width:100%; height:50px; background-color:grey;">Title</div>
-  {% block 'body' %}
-  {% endblock %}
+<body>
+  <div class="header-bar">
+    <div class="title"><a href="{% url 'wikiserver:index' %}">Wiki Server</a></div>
+    <div class="btns">
+      <div class="btn">
+        <a href="#">log in</a>
+      </div>
+      <div class="btn">
+        <a href="{% url 'wikiserver:signup' %}">sign up</a>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    {% block 'body' %}
+    {% endblock %}
+  </div>
 </body>
 </html>
