@@ -22,7 +22,7 @@ def SignUpView(request):
         return render(request, 'wikiserver/signup.html')
     elif request.method == 'POST':
         # validate form
-        if 'username' not in request.POST or 'password' not in request.POST:
+        if 'username' not in request.POST or 'password' not in request.POST or 'verify_password' not in request.POST:
             return render(request, 'wikiserver/signup.html', {
                 'error_message': "invalid form, did not contain username and/or password",
             }, status=400)
@@ -39,6 +39,13 @@ def SignUpView(request):
         if not validation['isValid']:
             return render(request, 'wikiserver/signup.html', {
                 'error_message': validation['message'],
+                'username': request.POST['username'],
+            }, status=400)
+
+        # validate, passwords match
+        if request.POST['password'] != request.POST['verify_password']:
+            return render(request, 'wikiserver/signup.html', {
+                'error_message': 'Passwords do not match',
                 'username': request.POST['username'],
             }, status=400)
 
