@@ -18,38 +18,37 @@ def IndexView(request):
 
 
 def SignUpView(request):
-    return render(request, 'wikiserver/signup.html')
+    if request.method == 'GET':
+        return render(request, 'wikiserver/signup.html')
+    elif request.method == 'POST':
+        # validate form
+        if 'username' not in request.POST or 'password' not in request.POST:
+            return render(request, 'wikiserver/signup.html', {
+                'error_message': "invalid form, did not contain username and/or password",
+            }, status=400)
 
+        # validate, username is unique and alpha-numeric
+        validation = UserAccountValidation.isValidUsername(request.POST['username'])
+        if not validation['isValid']:
+            return render(request, 'wikiserver/signup.html', {
+                'error_message': validation['message'],
+            }, status=400)
 
-def CreateUserAccount(request):
-    # validate form
-    if 'username' not in request.POST or 'password' not in request.POST:
-        return render(request, 'wikiserver/signup.html', {
-            'error_message': "invalid form, did not contain username and/or password",
-        }, status=400)
+        # validate, password is at least 4 characters
+        validation = UserAccountValidation.isValidPassword(request.POST['password'])
+        if not validation['isValid']:
+            return render(request, 'wikiserver/signup.html', {
+                'error_message': validation['message'],
+                'username': request.POST['username'],
+            }, status=400)
 
-    # validate, username is unique and alpha-numeric
-    validation = UserAccountValidation.isValidUsername(request.POST['username'])
-    if not validation['isValid']:
-        return render(request, 'wikiserver/signup.html', {
-            'error_message': validation['message'],
-        }, status=400)
+        # create user
+        password_hash = UserAccountPWHash.make_pw_hash(request.POST['username'], request.POST['password'])
+        ua = UserAccount(username=request.POST['username'], pw_hash=password_hash)
+        ua.save()
 
-    # validate, password is at least 4 characters
-    validation = UserAccountValidation.isValidPassword(request.POST['password'])
-    if not validation['isValid']:
-        return render(request, 'wikiserver/signup.html', {
-            'error_message': validation['message'],
-            'username': request.POST['username'],
-        }, status=400)
-
-    # create user
-    password_hash = UserAccountPWHash.make_pw_hash(request.POST['username'], request.POST['password'])
-    ua = UserAccount(username=request.POST['username'], pw_hash=password_hash)
-    ua.save()
-
-    # redirect
-    return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        # redirect
+        return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
 
 def PageView(request, page_id):
