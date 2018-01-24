@@ -5,6 +5,8 @@ from .models import UserAccount
 
 import hashlib
 import random
+import string
+
 
 class UserAccountValidation():
 
@@ -20,11 +22,12 @@ class UserAccountValidation():
             validation['isValid'] = False
             validation['message'] = 'Invalid username, please only use letters and numbers'
 
-        if UserAccount.objects.filter(username = username).count() > 0:
+        if UserAccount.objects.filter(username=username).count() > 0:
             validation['isValid'] = False
             validation['message'] = 'This username is already taken'
 
         return validation
+
 
     @staticmethod
     def isValidPassword(password):
@@ -38,13 +41,15 @@ class UserAccountValidation():
 
 
 class UserAccountPWHash():
+
     @staticmethod
     def make_pw_hash(name, pw, salt=None):
         if not salt:
-            salt = make_salt()
+            salt = UserAccountPWHash._UserAccountPWHash__make_salt()
         h = hashlib.sha256(name + pw + salt).hexdigest()
         return "%s,%s" % (h, salt)
 
+
     @staticmethod
-    def make_salt(length=5):
+    def __make_salt(length=5):
         return "".join(random.choice(string.letters) for x in xrange(length))

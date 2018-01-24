@@ -43,8 +43,8 @@ def CreateUserAccount(request):
         }, status=400)
 
     # create user
-    # password_hash = UserAccountPWHash.make_pw_hash(request.POST['password'])
-    ua = UserAccount(username=request.POST['username'], pw_hash=request.POST['password'])
+    password_hash = UserAccountPWHash.make_pw_hash(request.POST['username'], request.POST['password'])
+    ua = UserAccount(username=request.POST['username'], pw_hash=password_hash)
     ua.save()
 
     # redirect
