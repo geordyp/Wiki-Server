@@ -40,6 +40,7 @@ def CreateUserAccount(request):
     if not validation['isValid']:
         return render(request, 'wikiserver/signup.html', {
             'error_message': validation['message'],
+            'username': request.POST['username'],
         }, status=400)
 
     # create user
