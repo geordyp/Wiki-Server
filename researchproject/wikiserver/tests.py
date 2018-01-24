@@ -6,16 +6,10 @@ from django.urls import reverse
 
 from .models import UserAccount
 
+from .util import UserAccountPWHash
+
 
 class UserAccountTests(TestCase):
-
-    def test_create_user_account_success(self):
-        """
-        test valid input for user account creation
-        """
-        response = self.client.post(reverse('wikiserver:createuseraccount'),data={'username':'uniquename', 'password':'insecurepassword'})
-        self.assertEqual(response.status_code, 200)
-
 
     def test_create_user_account_password_failure(self):
         """
@@ -58,3 +52,23 @@ class UserAccountTests(TestCase):
         self.client.post(reverse('wikiserver:createuseraccount'),data={'username':'john', 'password':'insecurepassword'})
         response = self.client.post(reverse('wikiserver:createuseraccount'),data={'username':'john', 'password':'insecurepassword'})
         self.assertEqual(response.status_code, 400)
+
+
+    def test_create_user_account_success(self):
+        """
+        test valid input for user account creation
+        """
+        response = self.client.post(reverse('wikiserver:createuseraccount'),data={'username':'uniquename', 'password':'insecurepassword'})
+        self.assertRedirects(response, reverse('wikiserver:index'))
+        self.assertEqual(UserAccount.objects.filter(username='uniquename').count(), 1)
+
+
+    def test_create_user_account_pwhash_success(self):
+        """
+        test the creation of a password hash
+        """
+        u = 'uniquename'
+        p = 'insecurepassword'
+        response = self.client.post(reverse('wikiserver:createuseraccount'),data={'username':u, 'password':p})
+        user = UserAccount.objects.get(username=u)
+        self.assertNotEqual(user.pw_hash, p)
