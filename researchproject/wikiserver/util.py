@@ -12,32 +12,27 @@ class UserAccountValidation():
 
     @staticmethod
     def isValidUsername(username):
-        validation = {'isValid':True, 'message':'valid username'}
-
         if len(username) < 1:
-            validation['isValid'] = False
-            validation['message'] = 'Username is blank'
+            return {'isValid':False, 'message':'Username is blank'}
 
         if not username.isalnum():
-            validation['isValid'] = False
-            validation['message'] = 'Invalid username, please only use letters and numbers'
+            return {'isValid':False, 'message':'Invalid username, please only use letters and numbers'}
 
         if UserAccount.objects.filter(username=username).count() > 0:
-            validation['isValid'] = False
-            validation['message'] = 'This username is already taken'
+            return {'isValid':False, 'message':'This username is already taken'}
 
-        return validation
+        return {'isValid':True, 'message':'valid username'}
 
 
     @staticmethod
     def isValidPassword(password):
-        validation = {'isValid':True, 'message':'valid username'}
+        if len(password) == 0:
+            return {'isValid':False, 'message':'Password is blank'}
 
         if len(password) < 4:
-            validation['isValid'] = False
-            validation['message'] = 'Invalid password, please create a password with at least 4 characters'
+            return {'isValid':False, 'message':'Invalid password, please create a password with at least 4 characters'}
 
-        return validation
+        return {'isValid':True, 'message':'valid username'}
 
 
 class UserAccountPWHash():
