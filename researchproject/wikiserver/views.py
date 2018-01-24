@@ -8,6 +8,9 @@ from django.views import generic
 
 from .models import UserAccount
 
+from .util import UserAccountValidation
+from .util import UserAccountPWHash
+
 
 def IndexView(request):
     context = {'name':'geordy williams'}
@@ -19,19 +22,30 @@ def SignUpView(request):
 
 
 def CreateUserAccount(request):
-    # validate input TODO further validation
-    if 'username' not in request.POST or request.POST['username'] == '':
+    # validate form
+    if 'username' not in request.POST or 'password' not in request.POST:
         return render(request, 'wikiserver/signup.html', {
-            'error_message': "invalid username",
-        }, status=400)
-    if 'password' not in request.POST or request.POST['password'] == '':
-        return render(request, 'wikiserver/signup.html', {
-            'error_message': "invalid password",
+            'error_message': "invalid form, did not contain username and/or password",
         }, status=400)
 
-    # create user TODO hash password
-    ua = UserAccount(username=request.POST['username'], password=request.POST['password'])
-    ua.save();
+    # validate, username is unique and alpha-numeric
+    validation = UserAccountValidation.isValidUsername(request.POST['username'])
+    if not validation['isValid']:
+        return render(request, 'wikiserver/signup.html', {
+            'error_message': validation['message'],
+        }, status=400)
+
+    # validate, password is at least 4 characters
+    validation = UserAccountValidation.isValidPassword(request.POST['password'])
+    if not validation['isValid']:
+        return render(request, 'wikiserver/signup.html', {
+            'error_message': validation['message'],
+        }, status=400)
+
+    # create user
+    # password_hash = UserAccountPWHash.make_pw_hash(request.POST['password'])
+    ua = UserAccount(username=request.POST['username'], pw_hash=request.POST['password'])
+    ua.save()
 
     # redirect
     return HttpResponseRedirect(reverse('wikiserver:index', args=()))
