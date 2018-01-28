@@ -12,12 +12,18 @@
   <div class="header-bar">
     <div class="title"><a href="{% url 'wikiserver:index' %}">Wiki Server</a></div>
     <div class="btns">
+      {% if username %}
       <div class="btn">
-        <a href="#">log in</a>
+        <a href="{% url 'wikiserver:logout' %}">log out</a>
+      </div>
+      {% else %}
+      <div class="btn">
+        <a href="{% url 'wikiserver:login' %}">log in</a>
       </div>
       <div class="btn">
         <a href="{% url 'wikiserver:signup' %}">sign up</a>
       </div>
+      {% endif %}
     </div>
   </div>
   <div class="content">

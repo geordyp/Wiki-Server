@@ -1,0 +1,17 @@
+{% extends 'wikiserver/base.html' %}
+{% block 'body' %}
+
+<h1>Log In</h1>
+
+<form action="{% url 'wikiserver:login' %}" method="post">{% csrf_token %}
+  <input type="text" name="username" id="username"/>
+  <label for="username">Username</label><br />
+
+  <input type="password" name="password" id="password" />
+  <label for="password">Password</label><br />
+
+  {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+  <input type="submit" value="Log In" />
+</form>
+
+{% endblock %}

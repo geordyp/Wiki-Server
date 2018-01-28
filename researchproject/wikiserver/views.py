@@ -61,6 +61,31 @@ def UserSignUpView(request):
         return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
 
+def UserLogInView(request):
+    if request.method == 'GET':
+        return render(request, 'wikiserver/login.html')
+    elif request.method == 'POST':
+        # validate form
+        if 'username' not in request.POST or 'password' not in request.POST:
+            return render(request, 'wikiserver/login.html', {
+                'error_message': "invalid form, did not contain username and/or password",
+            }, status=400)
+
+        user = authenticate(username=request.POST['username'], password=request.POST['password'])
+        if user is not None:
+            login(request, user)
+            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        else:
+            return render(request, 'wikiserver/login.html', {
+                'error_message': "invalid login, please try again",
+            }, status=400)
+
+
+def UserLogOut(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+
+
 def PageView(request, page_id):
     context = {'id':page_id}
     return render(request, 'wikiserver/page.html', context)
