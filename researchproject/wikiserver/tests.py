@@ -71,3 +71,27 @@ class UserTests(TestCase):
         response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'password', 'verify_password':'password'})
         self.assertRedirects(response, reverse('wikiserver:index'))
         self.assertEqual(User.objects.filter(username='uniquename').count(), 1)
+
+
+    def test_user_login_failure(self):
+        """
+        test invalid user log in
+        """
+        self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'password', 'verify_password':'password'})
+        self.client.get(reverse('wikiserver:logout'))
+
+        # wrong password
+        response = self.client.post(reverse('wikiserver:login'),data={'username':'uniquename', 'password':'wrongpassword'})
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_user_login_success(self):
+        """
+        test valid user log in
+        """
+        self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'password', 'verify_password':'password'})
+        self.client.get(reverse('wikiserver:logout'))
+
+        # wrong password
+        response = self.client.post(reverse('wikiserver:login'),data={'username':'uniquename', 'password':'password'})
+        self.assertRedirects(response, reverse('wikiserver:index'))
