@@ -4,12 +4,10 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import UserAccount
-
-from .util import UserAccountPWHash
+from django.contrib.auth.models import User
 
 
-class UserAccountTests(TestCase):
+class UserTests(TestCase):
 
     def test_create_user_account_password_failure(self):
         """
@@ -72,17 +70,4 @@ class UserAccountTests(TestCase):
         """
         response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'password', 'verify_password':'password'})
         self.assertRedirects(response, reverse('wikiserver:index'))
-        self.assertEqual(UserAccount.objects.filter(username='uniquename').count(), 1)
-
-
-    def test_create_user_account_pwhash_success(self):
-        """
-        test the creation of a password hash
-        """
-        u = "uniquename"
-        p = "insecurepassword"
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':u, 'password':p, 'verify_password': p})
-        user = UserAccount.objects.get(username=u)
-        self.assertNotEqual(user.pw_hash, p)
-        self.assertIn(",", user.pw_hash)
-        self.assertEqual(len(user.pw_hash), 70)
+        self.assertEqual(User.objects.filter(username='uniquename').count(), 1)
