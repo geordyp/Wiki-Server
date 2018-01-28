@@ -1,10 +1,10 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
 
-{% if name %}
-    <p>Home Page. Hi {{name}}</p>
+{% if username %}
+    <p>Home Page. Hi {{username}}</p>
 {% else %}
-    <p>No name given.</p>
+    <p>Home Page.</p>
 {% endif %}
 
 {% endblock %}
