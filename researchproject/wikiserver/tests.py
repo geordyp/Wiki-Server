@@ -8,33 +8,50 @@ from django.contrib.auth.models import User
 
 
 class UserTests(TestCase):
+    """
+    tests for user actions
+    """
 
     def test_create_user_account_password_failure(self):
         """
         test invalid input for password in user account creation
         """
         # no passwords
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'uniquename'})
         self.assertEqual(response.status_code, 400)
 
         # no password
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'verify_password':''})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'uniquename',
+                                          'verify_password':''})
         self.assertEqual(response.status_code, 400)
 
         # no verify password
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':''})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'uniquename',
+                                          'password':''})
         self.assertEqual(response.status_code, 400)
 
         # blank password and verify password
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'', 'verify_password':''})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'uniquename',
+                                          'password':'',
+                                          'verify_password':''})
         self.assertEqual(response.status_code, 400)
 
         # short password
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'aaa', 'verify_password':'aaa'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'uniquename',
+                                          'password':'aaa',
+                                          'verify_password':'aaa'})
         self.assertEqual(response.status_code, 400)
 
         # password mismatch
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'passwordz', 'verify_password':'passwords'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'uniquename',
+                                          'password':'passwordz',
+                                          'verify_password':'passwords'})
         self.assertEqual(response.status_code, 400)
 
 
@@ -43,24 +60,41 @@ class UserTests(TestCase):
         test invalid input for username in user account creation
         """
         # no username
-        response = self.client.post(reverse('wikiserver:signup'),data={'password':'password', 'verify_password':'password'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'password':'password',
+                                          'verify_password':'password'})
         self.assertEqual(response.status_code, 400)
 
         # blank username
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'', 'password':'password', 'verify_password':'password'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'',
+                                          'password':'password',
+                                          'verify_password':'password'})
         self.assertEqual(response.status_code, 400)
 
         # non-alpha-numeric username
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'yo!', 'password':'password', 'verify_password':'password'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'yo!',
+                                          'password':'password',
+                                          'verify_password':'password'})
         self.assertEqual(response.status_code, 400)
 
         # non-alpha-numeric username
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'johnny-apple-seed', 'password':'password', 'verify_password':'password'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'johnny-apple-seed',
+                                          'password':'password',
+                                          'verify_password':'password'})
         self.assertEqual(response.status_code, 400)
 
         # taken username
-        self.client.post(reverse('wikiserver:signup'),data={'username':'john', 'password':'password', 'verify_password':'password'})
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'john', 'password':'password', 'verify_password':'password'})
+        self.client.post(reverse('wikiserver:signup'),
+                         data={'username':'john',
+                               'password':'password',
+                               'verify_password':'password'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'john',
+                                          'password':'password',
+                                          'verify_password':'password'})
         self.assertEqual(response.status_code, 400)
 
 
@@ -68,7 +102,10 @@ class UserTests(TestCase):
         """
         test valid input for user account creation
         """
-        response = self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'password', 'verify_password':'password'})
+        response = self.client.post(reverse('wikiserver:signup'),
+                                    data={'username':'uniquename',
+                                          'password':'password',
+                                          'verify_password':'password'})
         self.assertRedirects(response, reverse('wikiserver:index'))
         self.assertEqual(User.objects.filter(username='uniquename').count(), 1)
 
@@ -77,11 +114,16 @@ class UserTests(TestCase):
         """
         test invalid user log in
         """
-        self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'password', 'verify_password':'password'})
+        self.client.post(reverse('wikiserver:signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verify_password':'password'})
         self.client.get(reverse('wikiserver:logout'))
 
         # wrong password
-        response = self.client.post(reverse('wikiserver:login'),data={'username':'uniquename', 'password':'wrongpassword'})
+        response = self.client.post(reverse('wikiserver:login'),
+                                    data={'username':'uniquename',
+                                          'password':'wrongpassword'})
         self.assertEqual(response.status_code, 400)
 
 
@@ -89,9 +131,14 @@ class UserTests(TestCase):
         """
         test valid user log in
         """
-        self.client.post(reverse('wikiserver:signup'),data={'username':'uniquename', 'password':'password', 'verify_password':'password'})
+        self.client.post(reverse('wikiserver:signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verify_password':'password'})
         self.client.get(reverse('wikiserver:logout'))
 
         # wrong password
-        response = self.client.post(reverse('wikiserver:login'),data={'username':'uniquename', 'password':'password'})
+        response = self.client.post(reverse('wikiserver:login'),
+                                    data={'username':'uniquename',
+                                          'password':'password'})
         self.assertRedirects(response, reverse('wikiserver:index'))

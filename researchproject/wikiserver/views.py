@@ -12,46 +12,70 @@ from .util import CreateUserValidation
 
 
 def IndexView(request):
+    """
+    home page
+    """
     if request.user.is_authenticated:
-        return render(request, 'wikiserver/index.html', {'username': request.user.username})
+        # if user is logged in
+        return render(request,
+                      'wikiserver/index.html',
+                      {'username': request.user.username})
     else:
         return render(request, 'wikiserver/index.html')
 
 
 def UserSignUpView(request):
+    """
+    user account creation form
+    """
     if request.method == 'GET':
-        return render(request, 'wikiserver/signup.html')
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        else:
+            return render(request, 'wikiserver/signup.html')
     elif request.method == 'POST':
         # validate form
         if 'username' not in request.POST or 'password' not in request.POST or 'verify_password' not in request.POST:
-            return render(request, 'wikiserver/signup.html', {
-                'error_message': "invalid form, did not contain username and/or password",
-            }, status=400)
+            return render(request,
+                          'wikiserver/signup.html',
+                          {'error_message': "invalid form, did not contain username and/or password"},
+                          status=400)
+
+        u = request.POST['username']
+        p = request.POST['password']
+        vp = request.POST['verify_password']
 
         # validate, username is unique and alpha-numeric
-        validation = CreateUserValidation.isValidUsername(request.POST['username'])
+        validation = CreateUserValidation.isValidUsername(u)
         if not validation['isValid']:
-            return render(request, 'wikiserver/signup.html', {
-                'error_message': validation['message'],
-            }, status=400)
+            return render(request,
+                          'wikiserver/signup.html',
+                          {'error_message': validation['message']},
+                          status=400)
 
         # validate, password is at least 4 characters
-        validation = CreateUserValidation.isValidPassword(request.POST['password'])
+        validation = CreateUserValidation.isValidPassword(p)
         if not validation['isValid']:
-            return render(request, 'wikiserver/signup.html', {
-                'error_message': validation['message'],
-                'username': request.POST['username'],
-            }, status=400)
+            return render(request,
+                          'wikiserver/signup.html',
+                          {
+                            'error_message': validation['message'],
+                            'username': u
+                          },
+                          status=400)
 
         # validate, passwords match
-        if request.POST['password'] != request.POST['verify_password']:
-            return render(request, 'wikiserver/signup.html', {
-                'error_message': 'Passwords do not match',
-                'username': request.POST['username'],
-            }, status=400)
+        if p != vp:
+            return render(request,
+                          'wikiserver/signup.html',
+                          {
+                            'error_message': 'Passwords do not match',
+                            'username': u
+                          },
+                          status=400)
 
         # create user
-        user = User.objects.create_user(request.POST['username'], None, request.POST['password'])
+        user = User.objects.create_user(u, None, p)
         user.save()
 
         # login user
@@ -62,26 +86,41 @@ def UserSignUpView(request):
 
 
 def UserLogInView(request):
+    """
+    user log in form
+    """
     if request.method == 'GET':
-        return render(request, 'wikiserver/login.html')
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        else:
+            return render(request, 'wikiserver/login.html')
     elif request.method == 'POST':
         # validate form
         if 'username' not in request.POST or 'password' not in request.POST:
-            return render(request, 'wikiserver/login.html', {
-                'error_message': "invalid form, did not contain username and/or password",
-            }, status=400)
+            return render(request,
+                          'wikiserver/login.html',
+                          {'error_message': "invalid form, did not contain username and/or password"},
+                          status=400)
 
-        user = authenticate(username=request.POST['username'], password=request.POST['password'])
+        u = request.POST['username']
+        p = request.POST['password']
+
+        # authenticate user
+        user = authenticate(username=u, password=p)
         if user is not None:
             login(request, user)
             return HttpResponseRedirect(reverse('wikiserver:index', args=()))
         else:
-            return render(request, 'wikiserver/login.html', {
-                'error_message': "invalid login, please try again",
-            }, status=400)
+            return render(request,
+                          'wikiserver/login.html',
+                          {'error_message': "invalid login, please try again"},
+                          status=400)
 
 
 def UserLogOut(request):
+    """
+    logs out user
+    """
     logout(request)
     return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 

@@ -9,9 +9,16 @@ import string
 
 
 class CreateUserValidation():
+    """
+    Validates user input before creating a user
+    """
 
     @staticmethod
     def isValidUsername(username):
+        """
+        Checks for valid username input
+        """
+
         if len(username) < 1:
             return {'isValid':False, 'message':'Username is blank'}
 
@@ -26,6 +33,10 @@ class CreateUserValidation():
 
     @staticmethod
     def isValidPassword(password):
+        """
+        Checks for valid password input
+        """
+
         if len(password) == 0:
             return {'isValid':False, 'message':'Password is blank'}
 
