@@ -3,8 +3,9 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.urls import reverse
-
 from django.contrib.auth.models import User
+
+from .models import Post
 
 
 class UserTests(TestCase):
@@ -125,7 +126,7 @@ class UserTests(TestCase):
 
     def test_user_login_username_failure(self):
         """
-        test invalid username log in
+        test invalid username
         """
         self.client.post(reverse('wikiserver:user-signup'),
                          data={'username':'uniquename',
@@ -147,7 +148,7 @@ class UserTests(TestCase):
 
     def test_user_login_password_failure(self):
         """
-        test invalid password log in
+        test invalid password
         """
         self.client.post(reverse('wikiserver:user-signup'),
                          data={'username':'uniquename',
@@ -183,7 +184,6 @@ class UserTests(TestCase):
                                'verifyPassword':'password'})
         self.client.get(reverse('wikiserver:user-logout'))
 
-        # wrong password
         response = self.client.post(reverse('wikiserver:user-login'),
                                     data={'username':'uniquename',
                                           'password':'password'})
@@ -201,3 +201,79 @@ class UserTests(TestCase):
 
         response = self.client.get(reverse('wikiserver:user-login'))
         self.assertRedirects(response, reverse('wikiserver:index'))
+
+
+class PostTests(TestCase):
+    """
+    tests for post actions
+    """
+
+    def test_post_creation_logged_in_failure(self):
+        """
+        test post creation failure when not logged in
+        """
+        response = self.client.post(reverse('wikiserver:post-create'),
+                                    data={'title':'A Good Title',
+                                          'content':'And even better content.'})
+        self.assertRedirects(response, reverse('wikiserver:user-login'))
+
+
+    def test_post_creation_title_failure(self):
+        """
+        test invalid title
+        """
+        self.client.post(reverse('wikiserver:user-signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verifyPassword':'password'})
+
+        # no title
+        response = self.client.post(reverse('wikiserver:post-create'),
+                                    data={'content':'And even better content.'})
+        self.assertEqual(response.status_code, 400)
+
+        # blank title
+        response = self.client.post(reverse('wikiserver:post-create'),
+                                    data={'title':'',
+                                          'content':'And even better content.'})
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_post_creation_content_failure(self):
+        """
+        test invalid content
+        """
+        self.client.post(reverse('wikiserver:user-signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verifyPassword':'password'})
+
+        # no content
+        response = self.client.post(reverse('wikiserver:post-create'),
+                                    data={'title':'A Great Title'})
+        self.assertEqual(response.status_code, 400)
+
+        # blank content
+        response = self.client.post(reverse('wikiserver:post-create'),
+                                    data={'title':'A Great Title',
+                                          'content':''})
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_post_creation_success(self):
+        """
+        test valid post creation
+        """
+        self.client.post(reverse('wikiserver:user-signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verifyPassword':'password'})
+
+        t = 'A Great Title'
+        c = 'And even better content'
+        o = 'uniquename'
+        response = self.client.post(reverse('wikiserver:post-create'),
+                                    data={'title':t,
+                                          'content':o})
+        self.assertRedirects(response, reverse('wikiserver:post-view'))
+        self.assertEquals(Post.objects.filter(title=t, content=c, owner=o).count(), 1)
