@@ -110,6 +110,19 @@ class UserTests(TestCase):
         self.assertEqual(User.objects.filter(username='uniquename').count(), 1)
 
 
+    def test_create_user_account_redirect_success(self):
+        """
+        when user is logged in, signup should redirect to index
+        """
+        self.client.post(reverse('wikiserver:signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verify_password':'password'})
+
+        response = self.client.get(reverse('wikiserver:signup'))
+        self.assertRedirects(response, reverse('wikiserver:index'))
+
+
     def test_user_login_failure(self):
         """
         test invalid user log in
@@ -141,4 +154,17 @@ class UserTests(TestCase):
         response = self.client.post(reverse('wikiserver:login'),
                                     data={'username':'uniquename',
                                           'password':'password'})
+        self.assertRedirects(response, reverse('wikiserver:index'))
+
+
+    def test_user_login_redirect_success(self):
+        """
+        when user is logged in, login should redirect to index
+        """
+        self.client.post(reverse('wikiserver:signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verify_password':'password'})
+
+        response = self.client.get(reverse('wikiserver:login'))
         self.assertRedirects(response, reverse('wikiserver:index'))
