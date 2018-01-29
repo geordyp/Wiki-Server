@@ -18,5 +18,5 @@ urlpatterns = [
     # ex: /wiki/post/create
     url(r'^post/create$', views.PostCreate, name='post-create'),
     # ex: /wiki/post/5/
-    url(r'^post/(?P<pk>[0-9]+)/$', views.PostView, name='post-view')
+    url(r'^post/(?P<postid>[0-9]+)/$', views.PostView, name='post-view')
 ]

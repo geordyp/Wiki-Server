@@ -1,7 +1,7 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
 
-{% if username %}
+{% if userLoggedIn %}
 <p>Welcome {{username}}. <a href="{% url 'wikiserver:post-create' %}">Create a post</a></p>
 {% else %}
 <p>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-signup' %}">create an account</a>.</p>
