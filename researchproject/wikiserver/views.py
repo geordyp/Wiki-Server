@@ -33,14 +33,7 @@ def UserSignUpView(request):
     """
     user account creation form
     """
-    if request.method == 'GET':
-        if request.user.is_authenticated:
-            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
-        else:
-            return render(request,
-                          'wikiserver/user-signup.html',
-                          {'userLoggedIn': False})
-    elif request.method == 'POST':
+    if request.method == 'POST':
         # validate form
         if 'username' not in request.POST or 'password' not in request.POST or 'verifyPassword' not in request.POST:
             return render(request,
@@ -98,20 +91,20 @@ def UserSignUpView(request):
 
         # redirect
         return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+    else:
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        else:
+            return render(request,
+                          'wikiserver/user-signup.html',
+                          {'userLoggedIn': False})
 
 
 def UserLogInView(request):
     """
     user log in form
     """
-    if request.method == 'GET':
-        if request.user.is_authenticated:
-            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
-        else:
-            return render(request,
-                          'wikiserver/user-login.html',
-                          {'userLoggedIn': False})
-    elif request.method == 'POST':
+    if request.method == 'POST':
         # validate form
         if 'username' not in request.POST or 'password' not in request.POST:
             return render(request,
@@ -138,6 +131,13 @@ def UserLogInView(request):
                             'errorMessage': "invalid login, please try again"
                           },
                           status=400)
+    else:
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        else:
+            return render(request,
+                          'wikiserver/user-login.html',
+                          {'userLoggedIn': False})
 
 
 def UserLogOut(request):
