@@ -2,9 +2,9 @@
 {% block 'body' %}
 
 {% if username %}
-<p>Welcome {{username}}. <a href="">Create a post</a></p>
+<p>Welcome {{username}}. <a href="{% url 'wikiserver:post-create' %}">Create a post</a></p>
 {% else %}
-<p>Welcome. Please log in or create an account.</p>
+<p>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-signup' %}">create an account</a>.</p>
 {% endif %}
 
 {% endblock %}

@@ -14,14 +14,14 @@
     <div class="btns">
       {% if username %}
       <div class="btn">
-        <a href="{% url 'wikiserver:logout' %}">log out</a>
+        <a href="{% url 'wikiserver:user-logout' %}">log out</a>
       </div>
       {% else %}
       <div class="btn">
-        <a href="{% url 'wikiserver:login' %}">log in</a>
+        <a href="{% url 'wikiserver:user-signup' %}">sign up</a>
       </div>
       <div class="btn">
-        <a href="{% url 'wikiserver:signup' %}">sign up</a>
+        <a href="{% url 'wikiserver:user-login' %}">log in</a>
       </div>
       {% endif %}
     </div>

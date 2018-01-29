@@ -3,7 +3,7 @@
 
 <h1>Create An Account</h1>
 
-<form action="{% url 'wikiserver:signup' %}" method="post">{% csrf_token %}
+<form action="{% url 'wikiserver:user-signup' %}" method="post">{% csrf_token %}
   <input type="text" name="username" id="username" value="{{username}}"/>
   <label for="username">Username</label><br/>
 

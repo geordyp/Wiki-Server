@@ -125,6 +125,11 @@ def UserLogOut(request):
     return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
 
-def PageView(request, page_id):
+def PostCreate(request, page_id):
+    context = {'id':page_id}
+    return render(request, 'wikiserver/page-view.html', context)
+
+
+def PostView(request, page_id):
     context = {'id':page_id}
     return render(request, 'wikiserver/page-view.html', context)
