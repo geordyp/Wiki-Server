@@ -123,15 +123,48 @@ class UserTests(TestCase):
         self.assertRedirects(response, reverse('wikiserver:index'))
 
 
-    def test_user_login_failure(self):
+    def test_user_login_username_failure(self):
         """
-        test invalid user log in
+        test invalid username log in
         """
         self.client.post(reverse('wikiserver:user-signup'),
                          data={'username':'uniquename',
                                'password':'password',
                                'verifyPassword':'password'})
         self.client.get(reverse('wikiserver:user-logout'))
+
+        # no username
+        response = self.client.post(reverse('wikiserver:user-login'),
+                                    data={'password':'password'})
+        self.assertEqual(response.status_code, 400)
+
+        # blank username
+        response = self.client.post(reverse('wikiserver:user-login'),
+                                    data={'username':'',
+                                          'password':'password'})
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_user_login_password_failure(self):
+        """
+        test invalid password log in
+        """
+        self.client.post(reverse('wikiserver:user-signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verifyPassword':'password'})
+        self.client.get(reverse('wikiserver:user-logout'))
+
+        # no password
+        response = self.client.post(reverse('wikiserver:user-login'),
+                                    data={'username':'uniquename'})
+        self.assertEqual(response.status_code, 400)
+
+        # blank password
+        response = self.client.post(reverse('wikiserver:user-login'),
+                                    data={'username':'uniquename',
+                                          'password':''})
+        self.assertEqual(response.status_code, 400)
 
         # wrong password
         response = self.client.post(reverse('wikiserver:user-login'),
