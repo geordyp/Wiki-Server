@@ -40,7 +40,7 @@ def UserSignUpView(request):
                           'wikiserver/user-signup.html',
                           {
                             'userLoggedIn': False,
-                            'errorMessage': "invalid form, did not contain username and/or password"
+                            'errorMessage': "Invalid form, did not contain username and/or password"
                           },
                           status=400)
 
@@ -111,7 +111,7 @@ def UserLogInView(request):
                           'wikiserver/user-login.html',
                           {
                             'userLoggedIn': False,
-                            'errorMessage': "invalid form, did not contain username and/or password"
+                            'errorMessage': "Invalid form, did not contain username and/or password"
                           },
                           status=400)
 
@@ -128,7 +128,7 @@ def UserLogInView(request):
                           'wikiserver/user-login.html',
                           {
                             'userLoggedIn': False,
-                            'errorMessage': "invalid login, please try again"
+                            'errorMessage': "Invalid login, please try again"
                           },
                           status=400)
     else:
@@ -149,7 +149,55 @@ def UserLogOut(request):
 
 
 def PostCreate(request):
-    return render(request, 'wikiserver/post-create.html')
+    """
+    post creation form
+    """
+    if request.method == 'POST':
+        # validate form
+        if 'title' not in request.POST or 'content' not in request.POST:
+            return render(request,
+                          'wikiserver/post-create.html',
+                          {
+                            'userLoggedIn': True,
+                            'errorMessage': "Invalid form, did not contain title and/or content"
+                          },
+                          status=400)
+
+        t = request.POST['title']
+        c = request.POST['content']
+
+        # validate title
+        if len(t) < 1:
+            return render(request,
+                          'wikiserver/post-create.html',
+                          {
+                            'userLoggedIn': True,
+                            'errorMessage': "Please provide a title"
+                          },
+                          status=400)
+        # validate content
+        if len(c) < 1:
+            return render(request,
+                          'wikiserver/post-create.html',
+                          {
+                            'userLoggedIn': True,
+                            'errorMessage': "Post must have content"
+                          },
+                          status=400)
+
+        # make sure user is logged in
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('wikiserver:user-login', args=()))
+
+        post = Post(title=t, owner=request.user.username, content=c)
+        post.save()
+
+        return HttpResponseRedirect(reverse('wikiserver:post-view', args=(post.id)))
+    else:
+        if request.user.is_authenticated:
+            return render(request, 'wikiserver/post-create.html')
+        else:
+            return HttpResponseRedirect(reverse('wikiserver:user-login', args=()))
 
 
 def PostView(request, postid):

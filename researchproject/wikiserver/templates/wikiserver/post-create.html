@@ -1,4 +1,16 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
+<form action="{% url 'wikiserver:user-login' %}" method="post">{% csrf_token %}
+  <input type="text" name="title" id="title"/>
+  <label for="title">Title</label><br/>
 
+  <textarea style="width:400px;height:150px;" name="postContent" id="postContent">{{content}}</textarea>
+  <label for="postContent">Content</label><br/>
+
+  {% if errorMessage %}
+  <p><strong>{{errorMessage}}</strong></p>
+  {% endif %}
+
+  <input type="submit" value="Post"/>
+</form>
 {% endblock %}
