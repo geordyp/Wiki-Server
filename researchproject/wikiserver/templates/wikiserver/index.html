@@ -2,9 +2,9 @@
 {% block 'body' %}
 
 {% if username %}
-<p>Home Page. Hi {{username}}</p>
+<p>Welcome {{username}}. <a href="">Create a post</a></p>
 {% else %}
-<p>Home Page.</p>
+<p>Welcome. Please log in or create an account.</p>
 {% endif %}
 
 {% endblock %}
