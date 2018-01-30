@@ -271,9 +271,36 @@ class PostTests(TestCase):
 
         t = 'A Great Title'
         c = 'And even better content'
-        o = 'uniquename'
         response = self.client.post(reverse('wikiserver:post-create'),
                                     data={'title':t,
-                                          'content':o})
-        self.assertRedirects(response, reverse('wikiserver:post-view'))
-        self.assertEquals(Post.objects.filter(title=t, content=c, owner=o).count(), 1)
+                                          'content':c})
+        self.assertRedirects(response, reverse('wikiserver:post-view', args=(1,)))
+        self.assertEquals(Post.objects.filter(id=1).count(), 1)
+
+
+    def test_post_view_failure(self):
+        """
+        test failed post view
+        """
+        # viewing a post that doesn't exist
+        response = self.client.get(reverse('wikiserver:post-view', args=(123456,)))
+        self.assertRedirects(response, reverse('wikiserver:index'))
+
+
+    def test_post_view_success(self):
+        """
+        test successful post view
+        """
+        self.client.post(reverse('wikiserver:user-signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verifyPassword':'password'})
+
+        t = 'A Great Title'
+        c = 'And even better content'
+        self.client.post(reverse('wikiserver:post-create'),
+                         data={'title':t,
+                               'content':c})
+
+        response = self.client.get(reverse('wikiserver:post-view', args=(1,)))
+        self.assertEquals(response.status_code, 302)
