@@ -7,8 +7,10 @@ from django.urls import reverse
 from django.views import generic
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, logout, login
+from django.core.exceptions import ObjectDoesNotExist
 
 from .util import CreateUserValidation
+from .models import Post
 
 
 def IndexView(request):
@@ -189,10 +191,10 @@ def PostCreate(request):
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse('wikiserver:user-login', args=()))
 
-        post = Post(title=t, owner=request.user.username, content=c)
+        post = Post(title=t, owner=request.user, content=c)
         post.save()
 
-        return HttpResponseRedirect(reverse('wikiserver:post-view', args=(post.id)))
+        return HttpResponseRedirect(reverse('wikiserver:post-view', args=(post.id,)))
     else:
         if request.user.is_authenticated:
             return render(request, 'wikiserver/post-create.html')
@@ -201,4 +203,8 @@ def PostCreate(request):
 
 
 def PostView(request, postid):
-    return render(request, 'wikiserver/post-view.html', {'id':postid})
+    try:
+        p = Post.objects.get(id=postid)
+        return render(request, 'wikiserver/post-view.html', {'post':p})
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect(reverse('wikiserver:index', args=()))
