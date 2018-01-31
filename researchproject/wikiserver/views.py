@@ -17,18 +17,24 @@ def IndexView(request):
     """
     home page
     """
+    recentPosts = reversed(Post.objects.order_by('pub_date')[:10])
+
     if request.user.is_authenticated:
         # if user is logged in
         return render(request,
                       'wikiserver/index.html',
                       {
                         'userLoggedIn': True,
-                        'username': request.user.username
+                        'username': request.user.username,
+                        'recentPosts': recentPosts
                       })
     else:
         return render(request,
                       'wikiserver/index.html',
-                      {'userLoggedIn': False})
+                      {
+                        'userLoggedIn': False,
+                        'recentPosts': recentPosts
+                      })
 
 
 def UserSignUpView(request):

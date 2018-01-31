@@ -2,9 +2,20 @@
 {% block 'body' %}
 
 {% if userLoggedIn %}
-<p>Welcome {{username}}. <a href="{% url 'wikiserver:post-create' %}">Create a post</a></p>
+<h1>Welcome {{username}}</h1>
 {% else %}
-<p>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-signup' %}">create an account</a>.</p>
+<h2>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-signup' %}">create an account</a>.</h2>
+{% endif %}
+
+<h3>Recent Posts</h3>
+<ul>
+{% for p in recentPosts %}
+<li><a href="{% url 'wikiserver:post-view' postid=p.id %}">{{ p.title }}</a> by {{ p.owner.username }}</li>
+{% endfor %}
+</ul>
+
+{% if userLoggedIn %}
+<p><a href="{% url 'wikiserver:post-create' %}">Create a post</a></p>
 {% endif %}
 
 {% endblock %}
