@@ -17,7 +17,7 @@ def IndexView(request):
     """
     home page
     """
-    recentPosts = reversed(Post.objects.order_by('pub_date')[:10])
+    recentPosts = Post.objects.order_by('-pub_date')[:10]
 
     if request.user.is_authenticated:
         # if user is logged in
@@ -214,3 +214,15 @@ def PostView(request, postid):
         return render(request, 'wikiserver/post-view.html', {'post':p})
     except ObjectDoesNotExist:
         return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+
+
+def PostList(request):
+    posts = Post.objects.order_by('-pub_date')
+    return render(request,
+                  'wikiserver/post-list.html',
+                  {
+                    'posts': posts,
+                    'hasPrev': False,
+                    'hasNext': True,
+                    'numOfPages': [1,2,3,4,5,6,7]
+                  })
