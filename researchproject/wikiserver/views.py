@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.views import generic
 from django.contrib.auth.models import User
@@ -17,7 +17,7 @@ def IndexView(request):
     """
     home page
     """
-    recentPosts = Post.objects.order_by('-pub_date')[:10]
+    recentPosts = Post.objects.order_by('-pub_date')[:5]
 
     if request.user.is_authenticated:
         # if user is logged in
@@ -209,6 +209,9 @@ def PostCreate(request):
 
 
 def PostView(request, postid):
+    """
+    view a post
+    """
     try:
         p = Post.objects.get(id=postid)
         return render(request, 'wikiserver/post-view.html', {'post':p})
@@ -217,15 +220,41 @@ def PostView(request, postid):
 
 
 def PostList(request, pageNum):
-    posts = Post.objects.order_by('-pub_date')
+    """
+    view a list of all posts, 5 per list-page
+    """
+    # get all posts
+    allPosts = Post.objects.order_by('-pub_date')
+    numOfPosts = len(allPosts)
+    numOfPostsToDisplay = 10
+    pageNum = int(pageNum)
+
+    # get the number of list-pages
+    numOfListPages = numOfPosts / numOfPostsToDisplay
+    if numOfPosts % numOfPostsToDisplay != 0: numOfListPages+=1
+    listPageNumbers = []
+    for i in range(1, numOfListPages+1): listPageNumbers.append(i)
+
+    # error check pageNum
+    if pageNum < 1 or pageNum > numOfListPages:
+        raise Http404("List-Page number does not exist")
+
+    # get posts to display on this page
+    start = (pageNum - 1) * numOfPostsToDisplay
+    postsToDisplay = allPosts[start:start+numOfPostsToDisplay]
+
+    # determine if there is a prev/next page
+    hasPrev = False if pageNum == 1 else True
+    hasNext = False if pageNum == numOfListPages else True
+
     return render(request,
                   'wikiserver/post-list.html',
                   {
-                    'posts': posts,
-                    'hasPrev': False,
-                    'hasNext': True,
+                    'posts': postsToDisplay,
+                    'hasPrev': hasPrev,
+                    'hasNext': hasNext,
                     'curr': pageNum,
-                    'prev': int(pageNum)-1,
-                    'next': int(pageNum)+1,
-                    'numOfPages': [1,2,3,4,5,6,7]
+                    'prev': pageNum-1,
+                    'next': pageNum+1,
+                    'numOfPages': listPageNumbers
                   })
