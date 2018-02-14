@@ -16,9 +16,9 @@ urlpatterns = [
     url(r'^user/logout/$', views.UserLogOut, name='user-logout'),
 
     # ex: /wiki/post/create/
-    url(r'^post/create$', views.PostCreate, name='post-create'),
-    # ex: /wiki/post/5/
+    url(r'^post/create/$', views.PostCreate, name='post-create'),
+    # ex: /wiki/post/1/
     url(r'^post/(?P<postid>[0-9]+)/$', views.PostView, name='post-view'),
-    # ex: /wiki/post/list/
-    url(r'^post/list$', views.PostList, name='post-list')
+    # ex: /wiki/post/list/1/
+    url(r'^post/list/(?P<pageNum>[0-9]+)/$', views.PostList, name='post-list')
 ]

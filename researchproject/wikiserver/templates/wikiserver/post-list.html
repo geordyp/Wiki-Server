@@ -1,7 +1,7 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
 
-<h3>All Posts</h3>
+<h3>All Posts - Page {{curr}}</h3>
 <ul>
 {% for p in posts %}
 <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:post-view' postid=p.id %}">{{ p.title }}</a> by {{ p.owner.username }}</li>
@@ -10,9 +10,9 @@
 
 
 <p style="text-align:center;">
-  {% if hasPrev %}prev&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
-  {% for i in numOfPages %}{{i}}&nbsp;&nbsp;&nbsp;{% endfor %}
-  {% if hasNext %}&nbsp;&nbsp;&nbsp;next{% endif %}
+  {% if hasPrev %}<a href="{% url 'wikiserver:post-list' pageNum=prev %}"></a>prev&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+  {% for i in numOfPages %}<a href="{% url 'wikiserver:post-list' pageNum=i %}">{{i}}</a>&nbsp;&nbsp;&nbsp;{% endfor %}
+  {% if hasNext %}&nbsp;&nbsp;&nbsp;<a href="{% url 'wikiserver:post-list' pageNum=next %}">next</a>{% endif %}
 </p>
 
 {% endblock %}

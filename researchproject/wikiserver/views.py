@@ -216,7 +216,7 @@ def PostView(request, postid):
         return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
 
-def PostList(request):
+def PostList(request, pageNum):
     posts = Post.objects.order_by('-pub_date')
     return render(request,
                   'wikiserver/post-list.html',
@@ -224,5 +224,8 @@ def PostList(request):
                     'posts': posts,
                     'hasPrev': False,
                     'hasNext': True,
+                    'curr': pageNum,
+                    'prev': int(pageNum)-1,
+                    'next': int(pageNum)+1,
                     'numOfPages': [1,2,3,4,5,6,7]
                   })
