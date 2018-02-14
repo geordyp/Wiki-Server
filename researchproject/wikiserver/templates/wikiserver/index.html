@@ -7,6 +7,7 @@
 <h2>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-signup' %}">create an account</a>.</h2>
 {% endif %}
 
+{% if recentPosts %}
 <h3>Recent Posts</h3>
 <ul>
 {% for p in recentPosts %}
@@ -14,6 +15,7 @@
 {% endfor %}
 </ul>
 <p><a href="{% url 'wikiserver:post-list' pageNum=1 %}">View all posts</a></p>
+{% endif %}
 
 {% if userLoggedIn %}
 <p><a href="{% url 'wikiserver:post-create' %}">Create a post</a></p>

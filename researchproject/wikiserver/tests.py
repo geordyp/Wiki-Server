@@ -304,3 +304,31 @@ class PostTests(TestCase):
 
         response = self.client.get(reverse('wikiserver:post-view', args=(1,)))
         self.assertEquals(response.status_code, 302)
+
+
+    def test_post_list_failure(self):
+        """
+        test view post list failure
+        """
+        # list-page number out of range
+        response = self.client.get(reverse('wikiserver:post-list', args=(11,)))
+        self.assertEquals(response.status_code, 404)
+
+
+    def test_post_list_success(self):
+        """
+        test view post list success
+        """
+        self.client.post(reverse('wikiserver:user-signup'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verifyPassword':'password'})
+
+        t = 'A Great Title'
+        c = 'And even better content'
+        self.client.post(reverse('wikiserver:post-create'),
+                         data={'title':t,
+                               'content':c})
+                               
+        response = self.client.get(reverse('wikiserver:post-list', args=(1,)))
+        self.assertEquals(response.status_code, 200)
