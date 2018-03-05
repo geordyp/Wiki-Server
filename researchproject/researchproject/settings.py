@@ -78,8 +78,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'wikiserver',
-        'USER': 'geordy',
-        'PASSWORD': 'Appl3B3ar',
+        'USER': 'developer',
+        'PASSWORD': 'insecurepassword',
         'HOST': 'localhost',
         'PORT': '',
     }
