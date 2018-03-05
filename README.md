@@ -10,6 +10,7 @@ Working with the [iPlant Cyberinfrastructure Collaborative](http://www.iplantcol
 2. From the same directory, enter the command `vagrant ssh`.
 3. Once vagrant is up and running enter `cd /vagrant/researchproject`.
 4. Then enter the command `python manage.py runserver 0:5000` and from a browser, navigate to "http://localhost:5000/wiki/".
+5. To run tests, use `python manyage.py test`.
 
 ## Author
 Geordy Williams
