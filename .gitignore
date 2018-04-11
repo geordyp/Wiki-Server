@@ -103,8 +103,5 @@ ENV/
 # vagrant
 .vagrant
 
-# private notes
-private-notes.txt
-
 # migrations
 migrations/

@@ -8,6 +8,7 @@ from django.views import generic
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, logout, login
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.decorators import login_required
 
 from .util import CreateUserValidation
 from .models import Post
@@ -130,7 +131,10 @@ def UserLogInView(request):
         user = authenticate(username=u, password=p)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+            if str(request.META['QUERY_STRING']):
+                return HttpResponseRedirect(request.META['QUERY_STRING'].split("=")[1])
+            else:
+                return HttpResponseRedirect(reverse('wikiserver:index', args=()))
         else:
             return render(request,
                           'wikiserver/user-login.html',
@@ -143,9 +147,15 @@ def UserLogInView(request):
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('wikiserver:index', args=()))
         else:
-            return render(request,
-                          'wikiserver/user-login.html',
-                          {'userLoggedIn': False})
+            if request.META['QUERY_STRING'] != "":
+                return render(request,
+                              'wikiserver/user-login.html',
+                              {'userLoggedIn': False,
+                               'n': str(request.GET.get('next'))})
+            else:
+                return render(request,
+                              'wikiserver/user-login.html',
+                              {'userLoggedIn': False})
 
 
 def UserLogOut(request):
@@ -156,6 +166,7 @@ def UserLogOut(request):
     return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
 
+@login_required(login_url='/wiki/user/login/')
 def PostCreate(request):
     """
     post creation form
@@ -193,19 +204,12 @@ def PostCreate(request):
                           },
                           status=400)
 
-        # make sure user is logged in
-        if not request.user.is_authenticated:
-            return HttpResponseRedirect(reverse('wikiserver:user-login', args=()))
-
         post = Post(title=t, owner=request.user, content=c)
         post.save()
 
         return HttpResponseRedirect(reverse('wikiserver:post-view', args=(post.id,)))
     else:
-        if request.user.is_authenticated:
-            return render(request, 'wikiserver/post-create.html')
-        else:
-            return HttpResponseRedirect(reverse('wikiserver:user-login', args=()))
+        return render(request, 'wikiserver/post-create.html')
 
 
 def PostView(request, postid):
