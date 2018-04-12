@@ -3,11 +3,7 @@
 
 <h1>Log In</h1>
 
-{% if n %}
-<form action="{% url 'wikiserver:user-login' %}?next={{n}}" method="post">{% csrf_token %}
-{% else %}
-<form action="{% url 'wikiserver:user-login' %}" method="post">{% csrf_token %}
-{% endif %}
+<form action="{% url 'wikiserver:user-login' %}{% if n %}?next={{n}}{% endif %}" method="post">{% csrf_token %}
   <input type="text" name="username" id="username"/>
   <label for="username">Username</label><br/>
 
