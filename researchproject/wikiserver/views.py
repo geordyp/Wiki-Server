@@ -131,10 +131,10 @@ def UserLogInView(request):
         user = authenticate(username=u, password=p)
         if user is not None:
             login(request, user)
-            if str(request.META['QUERY_STRING']):
-                return HttpResponseRedirect(request.META['QUERY_STRING'].split("=")[1])
-            else:
-                return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+
+            n = request.GET.get('next', None)
+            if n is None: n = reverse('wikiserver:index', args=())
+            return HttpResponseRedirect(n)
         else:
             return render(request,
                           'wikiserver/user-login.html',
@@ -146,16 +146,12 @@ def UserLogInView(request):
     else:
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('wikiserver:index', args=()))
-        else:
-            if request.META['QUERY_STRING'] != "":
-                return render(request,
-                              'wikiserver/user-login.html',
-                              {'userLoggedIn': False,
-                               'n': str(request.GET.get('next'))})
-            else:
-                return render(request,
-                              'wikiserver/user-login.html',
-                              {'userLoggedIn': False})
+
+        n = request.GET.get('next', None)
+        return render(request,
+                      'wikiserver/user-login.html',
+                      {'userLoggedIn': False,
+                       'n': n})
 
 
 def UserLogOut(request):
@@ -166,7 +162,7 @@ def UserLogOut(request):
     return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
 
-@login_required(login_url='/wiki/user/login/')
+@login_required
 def PostCreate(request):
     """
     post creation form
@@ -194,6 +190,7 @@ def PostCreate(request):
                             'errorMessage': "Please provide a title"
                           },
                           status=400)
+
         # validate content
         if len(c) < 1:
             return render(request,
