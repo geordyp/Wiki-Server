@@ -55,7 +55,7 @@ ROOT_URLCONF = 'researchproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/vagrant/researchproject/static/'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -124,6 +124,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '/vagrant/researchproject/static/'
+STATIC_ROOT = ''
 
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+
+# Used by login_required
 LOGIN_URL = '/wiki/user/login/'
