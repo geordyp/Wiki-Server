@@ -4,7 +4,7 @@
 {% if userLoggedIn %}
 <h1>Welcome {{username}}</h1>
 {% else %}
-<h2>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-signup' %}">create an account</a>.</h2>
+<h2>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-join' %}">create an account</a>.</h2>
 {% endif %}
 
 {% if recentPosts %}

@@ -38,7 +38,7 @@ def IndexView(request):
                       })
 
 
-def UserSignUpView(request):
+def UserJoinView(request):
     """
     user account creation form
     """
@@ -47,7 +47,7 @@ def UserSignUpView(request):
         # validate form
         if 'username' not in request.POST or 'password' not in request.POST or 'verifyPassword' not in request.POST:
             return render(request,
-                          'wikiserver/user-signup.html',
+                          'wikiserver/user-join.html',
                           {
                             'userLoggedIn': False,
                             'n':n,
@@ -63,7 +63,7 @@ def UserSignUpView(request):
         validation = CreateUserValidation.isValidUsername(u)
         if not validation['isValid']:
             return render(request,
-                          'wikiserver/user-signup.html',
+                          'wikiserver/user-join.html',
                           {
                             'userLoggedIn': False,
                             'n':n,
@@ -75,7 +75,7 @@ def UserSignUpView(request):
         validation = CreateUserValidation.isValidPassword(p)
         if not validation['isValid']:
             return render(request,
-                          'wikiserver/user-signup.html',
+                          'wikiserver/user-join.html',
                           {
                             'userLoggedIn': False,
                             'n':n,
@@ -87,7 +87,7 @@ def UserSignUpView(request):
         # validate, passwords match
         if p != vp:
             return render(request,
-                          'wikiserver/user-signup.html',
+                          'wikiserver/user-join.html',
                           {
                             'userLoggedIn': False,
                             'n':n,
@@ -111,7 +111,7 @@ def UserSignUpView(request):
             return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
         return render(request,
-                      'wikiserver/user-signup.html',
+                      'wikiserver/user-join.html',
                       {'userLoggedIn': False,
                        'n': n})
 

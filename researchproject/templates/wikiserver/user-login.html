@@ -16,7 +16,7 @@
 
   <input type="submit" value="Log In"/>
 
-  <p>New? <a href="{% url 'wikiserver:user-signup' %}{% if n %}?next={{n}}{% endif %}">Create an account</a>
+  <p>New? <a href="{% url 'wikiserver:user-join' %}{% if n %}?next={{n}}{% endif %}">Create an account</a>
 </form>
 
 {% endblock %}

@@ -8,8 +8,8 @@ urlpatterns = [
     # ex: /wiki/
     url(r'^$', views.IndexView, name='index'),
 
-    # ex: /wiki/user/signup/
-    url(r'^user/signup/$', views.UserSignUpView, name='user-signup'),
+    # ex: /wiki/user/join/
+    url(r'^user/join/$', views.UserJoinView, name='user-join'),
     # ex: /wiki/user/login/
     url(r'^user/login/$', views.UserLogInView, name='user-login'),
     # ex: /wiki/user/logout/
