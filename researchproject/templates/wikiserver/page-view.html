@@ -1,0 +1,8 @@
+{% extends 'wikiserver/base.html' %}
+{% block 'body' %}
+
+<h2>{{page.title}}</h2>
+<h5>by {{page.owner.username}}</h5>
+<p>{{page.content}}</p>
+
+{% endblock %}

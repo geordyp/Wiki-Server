@@ -15,10 +15,10 @@ urlpatterns = [
     # ex: /wiki/user/logout/
     url(r'^user/logout/$', views.UserLogOut, name='user-logout'),
 
-    # ex: /wiki/post/create/
-    url(r'^post/create/$', views.PostCreate, name='post-create'),
-    # ex: /wiki/post/1/
-    url(r'^post/(?P<postid>[0-9]+)/$', views.PostView, name='post-view'),
-    # ex: /wiki/post/list/1/
-    url(r'^post/list/(?P<pageNum>[0-9]+)/$', views.PostList, name='post-list')
+    # ex: /wiki/page/create/
+    url(r'^page/create/$', views.PageCreate, name='page-create'),
+    # ex: /wiki/page/1/
+    url(r'^page/(?P<pageid>[0-9]+)/$', views.PageView, name='page-view'),
+    # ex: /wiki/page/list/1/
+    url(r'^page/list/(?P<listGroupNum>[0-9]+)/$', views.PageList, name='page-list')
 ]

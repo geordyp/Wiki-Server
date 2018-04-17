@@ -1,6 +1,6 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
-<form action="{% url 'wikiserver:post-create' %}" method="post">{% csrf_token %}
+<form action="{% url 'wikiserver:page-create' %}" method="post">{% csrf_token %}
   <input type="text" name="title" id="title"/>
   <label for="title">Title</label><br/>
 
@@ -11,6 +11,6 @@
   <p><strong>{{errorMessage}}</strong></p>
   {% endif %}
 
-  <input type="submit" value="Post"/>
+  <input type="submit" value="Create"/>
 </form>
 {% endblock %}

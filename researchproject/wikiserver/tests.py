@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 
-from .models import Post
+from .models import Page
 
 
 class UserTests(TestCase):
@@ -203,22 +203,22 @@ class UserTests(TestCase):
         self.assertRedirects(response, reverse('wikiserver:index'))
 
 
-class PostTests(TestCase):
+class PageTests(TestCase):
     """
-    tests for post actions
+    tests for page actions
     """
 
-    def test_post_creation_logged_in_failure(self):
+    def test_page_creation_logged_in_failure(self):
         """
-        test post creation failure when not logged in
+        test page creation failure when not logged in
         """
-        response = self.client.post(reverse('wikiserver:post-create'),
+        response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'title':'A Good Title',
                                           'content':'And even better content.'})
-        self.assertRedirects(response, str(reverse('wikiserver:user-login')) + "?next=/wiki/post/create/")
+        self.assertRedirects(response, str(reverse('wikiserver:user-login')) + "?next=/wiki/page/create/")
 
 
-    def test_post_creation_title_failure(self):
+    def test_page_creation_title_failure(self):
         """
         test invalid title
         """
@@ -228,18 +228,18 @@ class PostTests(TestCase):
                                'verifyPassword':'password'})
 
         # no title
-        response = self.client.post(reverse('wikiserver:post-create'),
+        response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'content':'And even better content.'})
         self.assertEqual(response.status_code, 400)
 
         # blank title
-        response = self.client.post(reverse('wikiserver:post-create'),
+        response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'title':'',
                                           'content':'And even better content.'})
         self.assertEqual(response.status_code, 400)
 
 
-    def test_post_creation_content_failure(self):
+    def test_page_creation_content_failure(self):
         """
         test invalid content
         """
@@ -249,20 +249,20 @@ class PostTests(TestCase):
                                'verifyPassword':'password'})
 
         # no content
-        response = self.client.post(reverse('wikiserver:post-create'),
+        response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'title':'A Great Title'})
         self.assertEqual(response.status_code, 400)
 
         # blank content
-        response = self.client.post(reverse('wikiserver:post-create'),
+        response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'title':'A Great Title',
                                           'content':''})
         self.assertEqual(response.status_code, 400)
 
 
-    def test_post_creation_success(self):
+    def test_page_creation_success(self):
         """
-        test valid post creation
+        test valid page creation
         """
         self.client.post(reverse('wikiserver:user-join'),
                          data={'username':'uniquename',
@@ -271,25 +271,25 @@ class PostTests(TestCase):
 
         t = 'A Great Title'
         c = 'And even better content'
-        response = self.client.post(reverse('wikiserver:post-create'),
+        response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'title':t,
                                           'content':c})
-        self.assertRedirects(response, reverse('wikiserver:post-view', args=(1,)))
-        self.assertEquals(Post.objects.filter(id=1).count(), 1)
+        self.assertRedirects(response, reverse('wikiserver:page-view', args=(1,)))
+        self.assertEquals(Page.objects.filter(id=1).count(), 1)
 
 
-    def test_post_view_failure(self):
+    def test_page_view_failure(self):
         """
-        test failed post view
+        test failed page view
         """
-        # viewing a post that doesn't exist
-        response = self.client.get(reverse('wikiserver:post-view', args=(123456,)))
+        # viewing a page that doesn't exist
+        response = self.client.get(reverse('wikiserver:page-view', args=(123456,)))
         self.assertRedirects(response, reverse('wikiserver:index'))
 
 
-    def test_post_view_success(self):
+    def test_page_view_success(self):
         """
-        test successful post view
+        test successful page view
         """
         self.client.post(reverse('wikiserver:user-join'),
                          data={'username':'uniquename',
@@ -298,26 +298,26 @@ class PostTests(TestCase):
 
         t = 'A Great Title'
         c = 'And even better content'
-        self.client.post(reverse('wikiserver:post-create'),
+        self.client.post(reverse('wikiserver:page-create'),
                          data={'title':t,
                                'content':c})
 
-        response = self.client.get(reverse('wikiserver:post-view', args=(1,)))
+        response = self.client.get(reverse('wikiserver:page-view', args=(1,)))
         self.assertEquals(response.status_code, 302)
 
 
-    def test_post_list_failure(self):
+    def test_page_list_failure(self):
         """
-        test view post list failure
+        test view page list failure
         """
         # list-page number out of range
-        response = self.client.get(reverse('wikiserver:post-list', args=(11,)))
+        response = self.client.get(reverse('wikiserver:page-list', args=(11,)))
         self.assertEquals(response.status_code, 404)
 
 
-    def test_post_list_success(self):
+    def test_page_list_success(self):
         """
-        test view post list success
+        test view page list success
         """
         self.client.post(reverse('wikiserver:user-join'),
                          data={'username':'uniquename',
@@ -326,9 +326,9 @@ class PostTests(TestCase):
 
         t = 'A Great Title'
         c = 'And even better content'
-        self.client.post(reverse('wikiserver:post-create'),
+        self.client.post(reverse('wikiserver:page-create'),
                          data={'title':t,
                                'content':c})
 
-        response = self.client.get(reverse('wikiserver:post-list', args=(1,)))
+        response = self.client.get(reverse('wikiserver:page-list', args=(1,)))
         self.assertEquals(response.status_code, 200)

@@ -11,14 +11,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 
 from .util import CreateUserValidation
-from .models import Post
+from .models import Page
 
 
 def IndexView(request):
     """
     home page
     """
-    recentPosts = Post.objects.order_by('-pub_date')[:5]
+    recentPages = Page.objects.order_by('-pub_date')[:5]
 
     if request.user.is_authenticated:
         # if user is logged in
@@ -27,14 +27,14 @@ def IndexView(request):
                       {
                         'userLoggedIn': True,
                         'username': request.user.username,
-                        'recentPosts': recentPosts
+                        'recentPages': recentPages
                       })
     else:
         return render(request,
                       'wikiserver/index.html',
                       {
                         'userLoggedIn': False,
-                        'recentPosts': recentPosts
+                        'recentPages': recentPages
                       })
 
 
@@ -171,15 +171,15 @@ def UserLogOut(request):
 
 
 @login_required
-def PostCreate(request):
+def PageCreate(request):
     """
-    post creation form
+    page creation form
     """
     if request.method == 'POST':
         # validate form
         if 'title' not in request.POST or 'content' not in request.POST:
             return render(request,
-                          'wikiserver/post-create.html',
+                          'wikiserver/page-create.html',
                           {
                             'userLoggedIn': True,
                             'errorMessage': "Invalid form, did not contain title and/or content"
@@ -192,7 +192,7 @@ def PostCreate(request):
         # validate title
         if len(t) < 1:
             return render(request,
-                          'wikiserver/post-create.html',
+                          'wikiserver/page-create.html',
                           {
                             'userLoggedIn': True,
                             'errorMessage': "Please provide a title"
@@ -202,68 +202,68 @@ def PostCreate(request):
         # validate content
         if len(c) < 1:
             return render(request,
-                          'wikiserver/post-create.html',
+                          'wikiserver/page-create.html',
                           {
                             'userLoggedIn': True,
-                            'errorMessage': "Post must have content"
+                            'errorMessage': "Page must have content"
                           },
                           status=400)
 
-        post = Post(title=t, owner=request.user, content=c)
-        post.save()
+        page = Page(title=t, owner=request.user, content=c)
+        page.save()
 
-        return HttpResponseRedirect(reverse('wikiserver:post-view', args=(post.id,)))
+        return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
     else:
-        return render(request, 'wikiserver/post-create.html')
+        return render(request, 'wikiserver/page-create.html')
 
 
-def PostView(request, postid):
+def PageView(request, pageid):
     """
-    view a post
+    view a page
     """
     try:
-        p = Post.objects.get(id=postid)
-        return render(request, 'wikiserver/post-view.html', {'post':p})
+        p = Page.objects.get(id=pageid)
+        return render(request, 'wikiserver/page-view.html', {'page':p})
     except ObjectDoesNotExist:
         return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
 
-def PostList(request, pageNum):
+def PageList(request, listGroupNum):
     """
-    view a list of all posts, 5 per list-page
+    view a list of all pages, 5 per list-page
     """
-    # get all posts
-    allPosts = Post.objects.order_by('-pub_date')
-    numOfPosts = len(allPosts)
-    numOfPostsToDisplay = 10
-    pageNum = int(pageNum)
+    # get all pages
+    allPages = Page.objects.order_by('-pub_date')
+    numOfPages = len(allPages)
+    numOfPagesToDisplay = 10
+    listGroupNum = int(listGroupNum)
 
-    # get the number of list-pages
-    numOfListPages = numOfPosts / numOfPostsToDisplay
-    if numOfPosts % numOfPostsToDisplay != 0: numOfListPages+=1
-    listPageNumbers = []
-    for i in range(1, numOfListPages+1): listPageNumbers.append(i)
+    # get the number of list groups
+    numOfListGroups = numOfPages / numOfPagesToDisplay
+    if numOfPages % numOfPagesToDisplay != 0: numOfListGroups+=1
+    listGroupNumbers = []
+    for i in range(1, numOfListGroups+1): listGroupNumbers.append(i)
 
-    # error check pageNum
-    if pageNum < 1 or pageNum > numOfListPages:
-        raise Http404("List-Page number does not exist")
+    # error check listGroupNum
+    if listGroupNum < 1 or listGroupNum > numOfListGroups:
+        raise Http404("List-page number does not exist")
 
-    # get posts to display on this page
-    start = (pageNum - 1) * numOfPostsToDisplay
-    postsToDisplay = allPosts[start:start+numOfPostsToDisplay]
+    # get pages to display
+    start = (listGroupNum - 1) * numOfPagesToDisplay
+    pagesToDisplay = allPages[start:start+numOfPagesToDisplay]
 
     # determine if there is a prev/next page
-    hasPrev = False if pageNum == 1 else True
-    hasNext = False if pageNum == numOfListPages else True
+    hasPrev = False if listGroupNum == 1 else True
+    hasNext = False if listGroupNum == numOfListGroups else True
 
     return render(request,
-                  'wikiserver/post-list.html',
+                  'wikiserver/page-list.html',
                   {
-                    'posts': postsToDisplay,
+                    'pages': pagesToDisplay,
                     'hasPrev': hasPrev,
                     'hasNext': hasNext,
-                    'curr': pageNum,
-                    'prev': pageNum-1,
-                    'next': pageNum+1,
-                    'numOfPages': listPageNumbers
+                    'curr': listGroupNum,
+                    'prev': listGroupNum-1,
+                    'next': listGroupNum+1,
+                    'numOfListGroups': listGroupNumbers
                   })
