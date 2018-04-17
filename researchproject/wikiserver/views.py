@@ -42,6 +42,7 @@ def UserSignUpView(request):
     """
     user account creation form
     """
+    n = request.GET.get('next', None)   # next
     if request.method == 'POST':
         # validate form
         if 'username' not in request.POST or 'password' not in request.POST or 'verifyPassword' not in request.POST:
@@ -49,6 +50,7 @@ def UserSignUpView(request):
                           'wikiserver/user-signup.html',
                           {
                             'userLoggedIn': False,
+                            'n':n,
                             'errorMessage': "Invalid form, did not contain username and/or password"
                           },
                           status=400)
@@ -64,6 +66,7 @@ def UserSignUpView(request):
                           'wikiserver/user-signup.html',
                           {
                             'userLoggedIn': False,
+                            'n':n,
                             'errorMessage': validation['message']
                           },
                           status=400)
@@ -75,6 +78,7 @@ def UserSignUpView(request):
                           'wikiserver/user-signup.html',
                           {
                             'userLoggedIn': False,
+                            'n':n,
                             'errorMessage': validation['message'],
                             'username': u
                           },
@@ -86,6 +90,7 @@ def UserSignUpView(request):
                           'wikiserver/user-signup.html',
                           {
                             'userLoggedIn': False,
+                            'n':n,
                             'errorMessage': 'Passwords do not match',
                             'username': u
                           },
@@ -99,20 +104,23 @@ def UserSignUpView(request):
         login(request, user)
 
         # redirect
-        return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        if n is None: n = reverse('wikiserver:index', args=())
+        return HttpResponseRedirect(n)
     else:
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('wikiserver:index', args=()))
-        else:
-            return render(request,
-                          'wikiserver/user-signup.html',
-                          {'userLoggedIn': False})
+
+        return render(request,
+                      'wikiserver/user-signup.html',
+                      {'userLoggedIn': False,
+                       'n': n})
 
 
 def UserLogInView(request):
     """
     user log in form
     """
+    n = request.GET.get('next', None)   # next
     if request.method == 'POST':
         # validate form
         if 'username' not in request.POST or 'password' not in request.POST:
@@ -120,6 +128,7 @@ def UserLogInView(request):
                           'wikiserver/user-login.html',
                           {
                             'userLoggedIn': False,
+                            'n':n,
                             'errorMessage': "Invalid form, did not contain username and/or password"
                           },
                           status=400)
@@ -132,7 +141,6 @@ def UserLogInView(request):
         if user is not None:
             login(request, user)
 
-            n = request.GET.get('next', None)
             if n is None: n = reverse('wikiserver:index', args=())
             return HttpResponseRedirect(n)
         else:
@@ -140,6 +148,7 @@ def UserLogInView(request):
                           'wikiserver/user-login.html',
                           {
                             'userLoggedIn': False,
+                            'n':n,
                             'errorMessage': "Invalid login, please try again"
                           },
                           status=400)
@@ -147,7 +156,6 @@ def UserLogInView(request):
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
-        n = request.GET.get('next', None)
         return render(request,
                       'wikiserver/user-login.html',
                       {'userLoggedIn': False,
