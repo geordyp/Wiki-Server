@@ -2,8 +2,9 @@
 Working with the [iPlant Cyberinfrastructure Collaborative](http://www.iplantcollaborative.org) to share biological applications and data for high-throughput phenotyping. Creating a wiki-style web server where users are allowed to post to share their own projects and algorithms.
 
 ## Technologies Used
-* [Django](https://www.djangoproject.com/)
-* [Vagrant](https://www.vagrantup.com/)
+* [Django](https://www.djangoproject.com/) - v1.11.5
+* [Python](https://www.python.org/) - v2.7.6
+* [Vagrant](https://www.vagrantup.com/) - v2.0.3
 
 ## Setup
 1. After cloning this repo to your machine, enter the command `vagrant up` from the directory containing "Vagrantfile"
