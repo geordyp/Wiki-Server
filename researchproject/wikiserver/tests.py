@@ -276,6 +276,7 @@ class PageTests(TestCase):
         response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'title':t,
                                           'content':c})
+
         self.assertRedirects(response, reverse('wikiserver:page-view', args=(1,)))
         self.assertEquals(Page.objects.filter(id=1).count(), 1)
 
@@ -286,35 +287,27 @@ class PageTests(TestCase):
         """
         # viewing a page that doesn't exist
         response = self.client.get(reverse('wikiserver:page-view', args=(123456,)))
-        self.assertRedirects(response, reverse('wikiserver:index'))
+        self.assertEquals(response.status_code, 404)
 
 
     def test_page_view_success(self):
         """
         test successful page view
         """
-        self.client.post(reverse('wikiserver:user-join'),
+        response = self.client.post(reverse('wikiserver:user-join'),
                          data={'username':'uniquename',
                                'password':'password',
                                'verifyPassword':'password'})
 
         t = 'A Great Title'
         c = 'And even better content'
-        self.client.post(reverse('wikiserver:page-create'),
+        response = self.client.post(reverse('wikiserver:page-create'),
                          data={'title':t,
                                'content':c})
 
-        response = self.client.get(reverse('wikiserver:page-view', args=(1,)))
-        self.assertEquals(response.status_code, 302)
-
-
-    def test_page_list_failure(self):
-        """
-        test view page list failure
-        """
-        # list-page number out of range
-        response = self.client.get(reverse('wikiserver:page-list', args=(11,)))
-        self.assertEquals(response.status_code, 404)
+        pages = Page.objects.filter(title=t)
+        response = self.client.get(reverse('wikiserver:page-view', args=(pages[0].id,)))
+        self.assertEquals(response.status_code, 200)
 
 
     def test_page_list_success(self):
@@ -334,3 +327,11 @@ class PageTests(TestCase):
 
         response = self.client.get(reverse('wikiserver:page-list', args=(1,)))
         self.assertEquals(response.status_code, 200)
+
+        # chapter (list-page) number too high
+        response = self.client.get(reverse('wikiserver:page-list', args=(100,)))
+        self.assertEquals(response.status_code, 302)
+
+        # chapter (list-page) number too low
+        response = self.client.get(reverse('wikiserver:page-list', args=(0,)))
+        self.assertEquals(response.status_code, 302)
