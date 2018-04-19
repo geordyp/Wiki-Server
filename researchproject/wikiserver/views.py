@@ -206,11 +206,7 @@ def PageList(request, chapter):
     state = {
         'username': request.user.username,
         'pagesToDisplay': [],
-        'chapterRange': [],
-        'numOfChapters': 0,
-        'curr': 1,
-        'prev': 0,
-        'next': 0
+        'chapterLinks': []
     }
 
     # get all pages
@@ -221,27 +217,31 @@ def PageList(request, chapter):
     chapterSize = 10
 
     # get the total number of chapters
-    state['numOfChapters'] = numOfPages / chapterSize
+    numOfChapters = numOfPages / chapterSize
     if numOfPages % chapterSize != 0:
-        state['numOfChapters'] += 1
+        numOfChapters += 1
 
     # error check current chapter
-    chapter = state['curr'] = int(chapter)
+    chapter = curr = int(chapter)
     if chapter < 1:
         return HttpResponseRedirect(reverse('wikiserver:page-list', args=(1,)))
-    elif chapter > state['numOfChapters']:
-        return HttpResponseRedirect(reverse('wikiserver:page-list', args=(state['numOfChapters'],)))
-
-    # get previous and next chapter values
-    state['prev'] = state['curr'] - 1
-    state['next'] = state['curr'] + 1
+    elif chapter > numOfChapters:
+        return HttpResponseRedirect(reverse('wikiserver:page-list', args=(numOfChapters,)))
 
     # get pages to display
     start = (chapter - 1) * chapterSize
     state['pagesToDisplay'] = allPages[start : start + chapterSize]
 
-    # get the list of chapter numbers, which will be displayed
-    for i in range(1, state['numOfChapters'] + 1):
-        state['chapterRange'].append(i)
+    # if has previous
+    if curr > 1:
+        state['chapterLinks'].append({'link': curr - 1, 'text': 'prev'})
+
+    # get the full list of chapters
+    for i in range(1, numOfChapters + 1):
+        state['chapterLinks'].append({'link': i, 'text': i})
+
+    # if has next
+    if curr < numOfChapters:
+        state['chapterLinks'].append({'link': curr + 1, 'text': 'next'})
 
     return render(request, 'wikiserver/page-list.html', state)
