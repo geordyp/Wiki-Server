@@ -8,6 +8,18 @@ import random
 import string
 
 
+class FormValidation():
+    """
+    Validates forms
+    """
+
+    @staticmethod
+    def formContainsAll(request, fields):
+        for i in range(0, len(fields)):
+            if (fields[i] not in request):
+                return False
+        return True
+
 class CreateUserValidation():
     """
     Validates user input before creating a user

@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, logout, login
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 
-from .util import CreateUserValidation
+from .util import CreateUserValidation, FormValidation
 from .models import Page
 
 
@@ -18,6 +18,7 @@ def IndexView(request):
     """
     home page
     """
+
     state = {
         'username': None,
         'recentPages': Page.objects.order_by('-pub_date')[:5]
@@ -26,7 +27,6 @@ def IndexView(request):
     if request.user.is_authenticated:
         state['username'] = request.user.username
 
-    # if user is logged in
     return render(request, 'wikiserver/index.html', state)
 
 
@@ -34,78 +34,60 @@ def UserJoinView(request):
     """
     user account creation form
     """
-    n = request.GET.get('next', None)   # next
+
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+
+    state = {
+        'username': None,
+        'next': request.GET.get('next', None),
+        'errorMessage': None,
+        'formUsername': ''
+    }
+
     if request.method == 'POST':
         # validate form
-        if 'username' not in request.POST or 'password' not in request.POST or 'verifyPassword' not in request.POST:
-            return render(request,
-                          'wikiserver/user-join.html',
-                          {
-                            'userLoggedIn': False,
-                            'n':n,
-                            'errorMessage': "Invalid form, did not contain username and/or password"
-                          },
-                          status=400)
+        fields = ['username', 'password', 'verifyPassword']
+        if not FormValidation.formContainsAll(request.POST, fields):
+            state['errorMessage'] = 'Invalid form, did not contain username and/or password'
+            return render(request, 'wikiserver/user-join.html', state, status=400)
 
-        u = request.POST['username']
-        p = request.POST['password']
-        vp = request.POST['verifyPassword']
+        uInput = str(request.POST['username'])
+        pInput = str(request.POST['password'])
+        vpInput = str(request.POST['verifyPassword'])
 
         # validate, username is unique and alpha-numeric
-        validation = CreateUserValidation.isValidUsername(u)
+        validation = CreateUserValidation.isValidUsername(uInput)
         if not validation['isValid']:
-            return render(request,
-                          'wikiserver/user-join.html',
-                          {
-                            'userLoggedIn': False,
-                            'n':n,
-                            'errorMessage': validation['message']
-                          },
-                          status=400)
+            state['errorMessage'] = validation['message']
+            return render(request, 'wikiserver/user-join.html', state, status=400)
 
         # validate, password is at least 4 characters
-        validation = CreateUserValidation.isValidPassword(p)
+        validation = CreateUserValidation.isValidPassword(pInput)
         if not validation['isValid']:
-            return render(request,
-                          'wikiserver/user-join.html',
-                          {
-                            'userLoggedIn': False,
-                            'n':n,
-                            'errorMessage': validation['message'],
-                            'username': u
-                          },
-                          status=400)
+            state['errorMessage'] = validation['message']
+            state['formUsername'] = uInput
+            return render(request, 'wikiserver/user-join.html', state, status=400)
 
         # validate, passwords match
-        if p != vp:
-            return render(request,
-                          'wikiserver/user-join.html',
-                          {
-                            'userLoggedIn': False,
-                            'n':n,
-                            'errorMessage': 'Passwords do not match',
-                            'username': u
-                          },
-                          status=400)
+        if pInput != vpInput:
+            state['errorMessage'] = 'Passwords do not match'
+            state['formUsername'] = uInput
+            return render(request, 'wikiserver/user-join.html', state, status=400)
 
         # create user
-        user = User.objects.create_user(u, None, p)
+        user = User.objects.create_user(uInput, None, pInput)
         user.save()
 
         # login user
         login(request, user)
 
         # redirect
-        if n is None: n = reverse('wikiserver:index', args=())
-        return HttpResponseRedirect(n)
-    else:
-        if request.user.is_authenticated:
-            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        if state['next'] is None: state['next'] = reverse('wikiserver:index', args=())
+        return HttpResponseRedirect(state['next'])
 
-        return render(request,
-                      'wikiserver/user-join.html',
-                      {'userLoggedIn': False,
-                       'n': n})
+    else:
+        return render(request, 'wikiserver/user-join.html', state)
 
 
 def UserLogInView(request):

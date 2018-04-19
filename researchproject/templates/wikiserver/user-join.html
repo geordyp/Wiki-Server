@@ -3,8 +3,8 @@
 
 <h1>Create An Account</h1>
 
-<form action="{% url 'wikiserver:user-join' %}{% if n %}?next={{n}}{% endif %}" method="post">{% csrf_token %}
-  <input type="text" name="username" id="username" value="{{username}}"/>
+<form action="{% url 'wikiserver:user-join' %}{% if next %}?next={{next}}{% endif %}" method="post">{% csrf_token %}
+  <input type="text" name="username" id="username" value="{{formUsername}}"/>
   <label for="username">Username</label><br/>
 
   <input type="password" name="password" id="password"/>
