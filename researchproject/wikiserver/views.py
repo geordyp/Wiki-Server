@@ -197,42 +197,46 @@ def PageView(request, pageid):
     return render(request, 'wikiserver/page-view.html', state)
 
 
-def PageList(request, listGroupNum):
+def PageList(request, chapter):
     """
-    view a list of all pages, 5 per list-page
+    view a list of all pages, 10 per chapter
+    chapter is equivalent to list-page
     """
+
+    state = {
+        'username': request.user.username,
+        'pagesToDisplay': [],
+        'chapterRange': [],
+        'numOfChapters': 0,
+        'curr': 1,
+        'prev': 0,
+        'next': 0
+    }
+
     # get all pages
     allPages = Page.objects.order_by('-pub_date')
     numOfPages = len(allPages)
-    numOfPagesToDisplay = 10
-    listGroupNum = int(listGroupNum)
 
-    # get the number of list groups
-    numOfListGroups = numOfPages / numOfPagesToDisplay
-    if numOfPages % numOfPagesToDisplay != 0: numOfListGroups+=1
-    listGroupNumbers = []
-    for i in range(1, numOfListGroups+1): listGroupNumbers.append(i)
+    # number of pages to display per list-page
+    chapterSize = 10
 
-    # error check listGroupNum
-    if listGroupNum < 1 or listGroupNum > numOfListGroups:
-        raise Http404("List-page number does not exist")
+    chapter = state['curr'] = int(chapter)
+    state['prev'] = state['curr'] - 1
+    state['next'] = state['curr'] + 1
+
+    # get the total number of chapters
+    state['numOfChapters'] = numOfPages / chapterSize
+    if numOfPages % chapterSize != 0: state['numOfChapters'] += 1
+
+    # error check chapter
+    if chapter < 1 or chapter > state['numOfChapters']:
+        raise Http404("Chapter (list-page) number does not exist")
 
     # get pages to display
-    start = (listGroupNum - 1) * numOfPagesToDisplay
-    pagesToDisplay = allPages[start:start+numOfPagesToDisplay]
+    start = (chapter - 1) * chapterSize
+    state['pagesToDisplay'] = allPages[start : start + chapterSize]
 
-    # determine if there is a prev/next page
-    hasPrev = False if listGroupNum == 1 else True
-    hasNext = False if listGroupNum == numOfListGroups else True
+    # get the list of chapter numbers, which will be displayed
+    for i in range(1, state['numOfChapters']+1): state['chapterRange'].append(i)
 
-    return render(request,
-                  'wikiserver/page-list.html',
-                  {
-                    'pages': pagesToDisplay,
-                    'hasPrev': hasPrev,
-                    'hasNext': hasNext,
-                    'curr': listGroupNum,
-                    'prev': listGroupNum-1,
-                    'next': listGroupNum+1,
-                    'numOfListGroups': listGroupNumbers
-                  })
+    return render(request, 'wikiserver/page-list.html', state)

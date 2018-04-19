@@ -3,15 +3,15 @@
 
 <h3>All Pages</h3>
 <ul>
-{% for p in pages %}
+{% for p in pagesToDisplay %}
 <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' pageid=p.id %}">{{ p.title }}</a> by {{ p.owner.username }}</li>
 {% endfor %}
 </ul>
 
 <p style="text-align:center;">
-  {% if hasPrev %}<a href="{% url 'wikiserver:page-list' listGroupNum=prev %}">prev</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
-  {% for i in numOfListGroups %}<a href="{% url 'wikiserver:page-list' listGroupNum=i %}">{% if curr == i %}<b>{{i}}</b>{% else %}{{i}}{% endif %}</a>&nbsp;&nbsp;&nbsp;{% endfor %}
-  {% if hasNext %}&nbsp;&nbsp;&nbsp;<a href="{% url 'wikiserver:page-list' listGroupNum=next %}">next</a>{% endif %}
+  {% if prev > 0 %}<a href="{% url 'wikiserver:page-list' chapter=prev %}">prev</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+  {% for i in chapterRange %}<a href="{% url 'wikiserver:page-list' chapter=i %}">{% if curr == i %}<b>{{i}}</b>{% else %}{{i}}{% endif %}</a>&nbsp;&nbsp;&nbsp;{% endfor %}
+  {% if next <= numOfChapters %}&nbsp;&nbsp;&nbsp;<a href="{% url 'wikiserver:page-list' chapter=next %}">next</a>{% endif %}
 </p>
 
 {% endblock %}

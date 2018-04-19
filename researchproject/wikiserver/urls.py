@@ -20,5 +20,5 @@ urlpatterns = [
     # ex: /wiki/page/1/
     url(r'^page/(?P<pageid>[0-9]+)/$', views.PageView, name='page-view'),
     # ex: /wiki/page/list/1/
-    url(r'^page/list/(?P<listGroupNum>[0-9]+)/$', views.PageList, name='page-list')
+    url(r'^page/list/(?P<chapter>[0-9]+)/$', views.PageList, name='page-list')
 ]

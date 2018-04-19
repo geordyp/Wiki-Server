@@ -14,7 +14,7 @@
     <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' pageid=p.id %}">{{ p.title }}</a> by {{ p.owner.username }}</li>
   {% endfor %}
   </ul>
-  <p><a href="{% url 'wikiserver:page-list' listGroupNum=1 %}">View all pages</a></p>
+  <p><a href="{% url 'wikiserver:page-list' chapter=1 %}">View all pages</a></p>
 {% endif %}
 
 {% if username %}
