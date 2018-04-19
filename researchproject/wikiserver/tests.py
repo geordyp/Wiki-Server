@@ -100,17 +100,6 @@ class UserTests(TestCase):
                                           'verifyPassword':'password'})
         self.assertEqual(response.status_code, 400)
 
-        # already logged in
-        self.client.post(reverse('wikiserver:user-join'),
-                         data={'username':'paul',
-                               'password':'password',
-                               'verifyPassword':'password'})
-
-        response = self.client.post(reverse('wikiserver:user-join'),
-                                    data={'username':'tim',
-                                          'password':'password',
-                                          'verifyPassword':'password'})
-        self.assertEqual(response.status_code, 302)
 
     def test_create_user_account_success(self):
         """

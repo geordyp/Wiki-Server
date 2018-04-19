@@ -3,7 +3,9 @@
 
 <h1>Log In</h1>
 
-<form action="{% url 'wikiserver:user-login' %}{% if n %}?next={{n}}{% endif %}" method="post">{% csrf_token %}
+<form action="{% url 'wikiserver:user-login' %}{% if next %}?next={{next}}{% endif %}" method="post">
+  {% csrf_token %}
+
   <input type="text" name="username" id="username"/>
   <label for="username">Username</label><br/>
 
@@ -16,7 +18,7 @@
 
   <input type="submit" value="Log In"/>
 
-  <p>New? <a href="{% url 'wikiserver:user-join' %}{% if n %}?next={{n}}{% endif %}">Create an account</a>
+  <p>New? <a href="{% url 'wikiserver:user-join' %}{% if next %}?next={{next}}{% endif %}">Create an account</a>
 </form>
 
 {% endblock %}

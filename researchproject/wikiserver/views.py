@@ -83,7 +83,9 @@ def UserJoinView(request):
         login(request, user)
 
         # redirect
-        if state['next'] is None: state['next'] = reverse('wikiserver:index', args=())
+        if state['next'] is None:
+            state['next'] = reverse('wikiserver:index', args=())
+
         return HttpResponseRedirect(state['next'])
 
     else:
@@ -94,46 +96,40 @@ def UserLogInView(request):
     """
     user log in form
     """
-    n = request.GET.get('next', None)   # next
+
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+
+    state = {
+        'username': None,
+        'next': request.GET.get('next', None),
+        'errorMessage': None
+    }
+
     if request.method == 'POST':
         # validate form
-        if 'username' not in request.POST or 'password' not in request.POST:
-            return render(request,
-                          'wikiserver/user-login.html',
-                          {
-                            'userLoggedIn': False,
-                            'n':n,
-                            'errorMessage': "Invalid form, did not contain username and/or password"
-                          },
-                          status=400)
+        fields = ['username', 'password']
+        if not FormValidation.formContainsAll(request.POST, fields):
+            state['errorMessage'] = 'Invalid form, did not contain username and/or password'
+            return render(request, 'wikiserver/user-join.html', state, status=400)
 
-        u = request.POST['username']
-        p = request.POST['password']
+        uInput = str(request.POST['username'])
+        pInput = str(request.POST['password'])
 
         # authenticate user
-        user = authenticate(username=u, password=p)
-        if user is not None:
-            login(request, user)
-
-            if n is None: n = reverse('wikiserver:index', args=())
-            return HttpResponseRedirect(n)
+        user = authenticate(username=uInput, password=pInput)
+        if user is None:
+            state['errorMessage'] = 'Invalid login, please try again'
+            return render(request, 'wikiserver/user-login.html', state, status=400)
         else:
-            return render(request,
-                          'wikiserver/user-login.html',
-                          {
-                            'userLoggedIn': False,
-                            'n':n,
-                            'errorMessage': "Invalid login, please try again"
-                          },
-                          status=400)
-    else:
-        if request.user.is_authenticated:
-            return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+            login(request, user)
+            if state['next'] is None:
+                state['next'] = reverse('wikiserver:index', args=())
+                
+            return HttpResponseRedirect(state['next'])
 
-        return render(request,
-                      'wikiserver/user-login.html',
-                      {'userLoggedIn': False,
-                       'n': n})
+    else:
+        return render(request, 'wikiserver/user-login.html', state)
 
 
 def UserLogOut(request):
