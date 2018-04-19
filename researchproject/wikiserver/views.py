@@ -20,12 +20,9 @@ def IndexView(request):
     """
 
     state = {
-        'username': None,
+        'username': request.user.username,
         'recentPages': Page.objects.order_by('-pub_date')[:5]
     }
-
-    if request.user.is_authenticated:
-        state['username'] = request.user.username
 
     return render(request, 'wikiserver/index.html', state)
 
@@ -145,6 +142,7 @@ def PageCreate(request):
     """
     page creation form
     """
+
     state = {
         'username': request.user.username,
         'errorMessage': None,
@@ -185,11 +183,18 @@ def PageView(request, pageid):
     """
     view a page
     """
+
+    state = {
+        'username': request.user.username,
+        'page': {}
+    }
+
     try:
-        p = Page.objects.get(id=pageid)
-        return render(request, 'wikiserver/page-view.html', {'page':p})
-    except ObjectDoesNotExist:
-        return HttpResponseRedirect(reverse('wikiserver:index', args=()))
+        state['page'] = Page.objects.get(id=pageid)
+    except Page.DoesNotExist:
+        raise Http404("Page does not exist")
+
+    return render(request, 'wikiserver/page-view.html', state)
 
 
 def PageList(request, listGroupNum):
