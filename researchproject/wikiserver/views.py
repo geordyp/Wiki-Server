@@ -49,10 +49,10 @@ def UserJoinView(request):
         # validate form
         fields = ['username', 'password', 'verifyPassword']
         if not FormValidation.formContainsAll(request.POST, fields):
-            state['errorMessage'] = 'Invalid form, did not contain username and/or password'
+            state['errorMessage'] = 'Invalid form, did not contain username, password, and/or verifyPassword'
             return render(request, 'wikiserver/user-join.html', state, status=400)
 
-        uInput = str(request.POST['username'])
+        uInput = state['formUsername'] = str(request.POST['username'])
         pInput = str(request.POST['password'])
         vpInput = str(request.POST['verifyPassword'])
 
@@ -60,19 +60,18 @@ def UserJoinView(request):
         validation = CreateUserValidation.isValidUsername(uInput)
         if not validation['isValid']:
             state['errorMessage'] = validation['message']
+            state['formUsername'] = ''
             return render(request, 'wikiserver/user-join.html', state, status=400)
 
         # validate, password is at least 4 characters
         validation = CreateUserValidation.isValidPassword(pInput)
         if not validation['isValid']:
             state['errorMessage'] = validation['message']
-            state['formUsername'] = uInput
             return render(request, 'wikiserver/user-join.html', state, status=400)
 
         # validate, passwords match
         if pInput != vpInput:
             state['errorMessage'] = 'Passwords do not match'
-            state['formUsername'] = uInput
             return render(request, 'wikiserver/user-join.html', state, status=400)
 
         # create user
@@ -111,7 +110,7 @@ def UserLogInView(request):
         fields = ['username', 'password']
         if not FormValidation.formContainsAll(request.POST, fields):
             state['errorMessage'] = 'Invalid form, did not contain username and/or password'
-            return render(request, 'wikiserver/user-join.html', state, status=400)
+            return render(request, 'wikiserver/user-login.html', state, status=400)
 
         uInput = str(request.POST['username'])
         pInput = str(request.POST['password'])
@@ -125,7 +124,7 @@ def UserLogInView(request):
             login(request, user)
             if state['next'] is None:
                 state['next'] = reverse('wikiserver:index', args=())
-                
+
             return HttpResponseRedirect(state['next'])
 
     else:
@@ -136,6 +135,7 @@ def UserLogOut(request):
     """
     logs out user
     """
+
     logout(request)
     return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
@@ -145,46 +145,40 @@ def PageCreate(request):
     """
     page creation form
     """
+    state = {
+        'username': request.user.username,
+        'errorMessage': None,
+        'formTitle': '',
+        'formContent': ''
+    }
+
     if request.method == 'POST':
         # validate form
-        if 'title' not in request.POST or 'content' not in request.POST:
-            return render(request,
-                          'wikiserver/page-create.html',
-                          {
-                            'userLoggedIn': True,
-                            'errorMessage': "Invalid form, did not contain title and/or content"
-                          },
-                          status=400)
+        fields = ['title', 'content']
+        if not FormValidation.formContainsAll(request.POST, fields):
+            state['errorMessage'] = 'Invalid form, did not contain title and/or content'
+            return render(request, 'wikiserver/user-join.html', state, status=400)
 
-        t = request.POST['title']
-        c = request.POST['content']
+        tInput = state['formTitle'] = request.POST['title']
+        cInput = state['formContent'] = request.POST['content']
 
         # validate title
-        if len(t) < 1:
-            return render(request,
-                          'wikiserver/page-create.html',
-                          {
-                            'userLoggedIn': True,
-                            'errorMessage': "Please provide a title"
-                          },
-                          status=400)
+        if len(tInput) < 1:
+            state['errorMessage'] = "Please provide a title"
+            return render(request, 'wikiserver/page-create.html', state, status=400)
 
         # validate content
-        if len(c) < 1:
-            return render(request,
-                          'wikiserver/page-create.html',
-                          {
-                            'userLoggedIn': True,
-                            'errorMessage': "Page must have content"
-                          },
-                          status=400)
+        if len(cInput) < 1:
+            state['errorMessage'] = "Page must have content"
+            return render(request, 'wikiserver/page-create.html', state, status=400)
 
-        page = Page(title=t, owner=request.user, content=c)
+        page = Page(title=tInput, owner=request.user, content=cInput)
         page.save()
 
         return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
+
     else:
-        return render(request, 'wikiserver/page-create.html')
+        return render(request, 'wikiserver/page-create.html', state)
 
 
 def PageView(request, pageid):

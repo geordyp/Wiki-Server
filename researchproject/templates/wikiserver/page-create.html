@@ -1,10 +1,12 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
-<form action="{% url 'wikiserver:page-create' %}" method="post">{% csrf_token %}
-  <input type="text" name="title" id="title"/>
+<form action="{% url 'wikiserver:page-create' %}" method="post">
+  {% csrf_token %}
+
+  <input type="text" name="title" id="title" value="{{formTitle}}"/>
   <label for="title">Title</label><br/>
 
-  <textarea style="width:400px;height:150px;" name="content" id="content">{{content}}</textarea>
+  <textarea style="width:400px;height:150px;" name="content" id="content">{{formContent}}</textarea>
   <label for="content">Content</label><br/>
 
   {% if errorMessage %}
