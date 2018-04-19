@@ -1,24 +1,24 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
 
-{% if userLoggedIn %}
-<h1>Welcome {{username}}</h1>
+{% if username %}
+  <h1>Welcome {{username}}</h1>
 {% else %}
-<h2>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-join' %}">create an account</a>.</h2>
+  <h2>Welcome. Please <a href="{% url 'wikiserver:user-login' %}">log in</a> or <a href="{% url 'wikiserver:user-join' %}">create an account</a>.</h2>
 {% endif %}
 
 {% if recentPages %}
-<h3>Recently Created Pages</h3>
-<ul>
-{% for p in recentPages %}
-<li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' pageid=p.id %}">{{ p.title }}</a> by {{ p.owner.username }}</li>
-{% endfor %}
-</ul>
-<p><a href="{% url 'wikiserver:page-list' listGroupNum=1 %}">View all pages</a></p>
+  <h3>Recently Created Pages</h3>
+  <ul>
+  {% for p in recentPages %}
+    <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' pageid=p.id %}">{{ p.title }}</a> by {{ p.owner.username }}</li>
+  {% endfor %}
+  </ul>
+  <p><a href="{% url 'wikiserver:page-list' listGroupNum=1 %}">View all pages</a></p>
 {% endif %}
 
-{% if userLoggedIn %}
-<p><a href="{% url 'wikiserver:page-create' %}">Create a page</a></p>
+{% if username %}
+  <p><a href="{% url 'wikiserver:page-create' %}">Create a page</a></p>
 {% endif %}
 
 {% endblock %}

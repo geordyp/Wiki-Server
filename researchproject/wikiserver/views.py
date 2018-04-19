@@ -18,24 +18,16 @@ def IndexView(request):
     """
     home page
     """
-    recentPages = Page.objects.order_by('-pub_date')[:5]
+    state = {
+        'username': None,
+        'recentPages': Page.objects.order_by('-pub_date')[:5]
+    }
 
     if request.user.is_authenticated:
-        # if user is logged in
-        return render(request,
-                      'wikiserver/index.html',
-                      {
-                        'userLoggedIn': True,
-                        'username': request.user.username,
-                        'recentPages': recentPages
-                      })
-    else:
-        return render(request,
-                      'wikiserver/index.html',
-                      {
-                        'userLoggedIn': False,
-                        'recentPages': recentPages
-                      })
+        state['username'] = request.user.username
+
+    # if user is logged in
+    return render(request, 'wikiserver/index.html', state)
 
 
 def UserJoinView(request):
