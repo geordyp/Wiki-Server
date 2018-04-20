@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 
 from .util import CreateUserValidation, FormValidation
 from .models import Page
+import requests
 
 
 def IndexView(request):
@@ -193,6 +194,14 @@ def PageView(request, pageid):
         state['page'] = Page.objects.get(id=pageid)
     except Page.DoesNotExist:
         raise Http404("Page does not exist")
+
+    try:
+        headers = {'Content-Type': 'text/plain'}
+        data = state['page'].content
+        md = requests.post('https://api.github.com/markdown/raw', headers=headers, data=data)
+        state['page'].content = md.text
+    except requests.exceptions.RequestException as e:
+        print(e)
 
     return render(request, 'wikiserver/page-view.html', state)
 
