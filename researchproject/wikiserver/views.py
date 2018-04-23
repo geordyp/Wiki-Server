@@ -187,7 +187,8 @@ def PageView(request, pageid):
 
     state = {
         'username': request.user.username,
-        'page': {}
+        'page': {},
+        'markdownAvailable': True
     }
 
     try:
@@ -199,9 +200,14 @@ def PageView(request, pageid):
         headers = {'Content-Type': 'text/plain'}
         data = state['page'].content
         md = requests.post('https://api.github.com/markdown/raw', headers=headers, data=data)
-        state['page'].content = md.text
+        if md.status_code < 300:
+            state['page'].content = md.text
+        else:
+            state['markdownAvailable'] = False
+            print('%d error: %s' % (md.status_code, md.text,))
     except requests.exceptions.RequestException as e:
-        print(e)
+        state['markdownAvailable'] = False
+        print('error: %s' % (e,))
 
     return render(request, 'wikiserver/page-view.html', state)
 
