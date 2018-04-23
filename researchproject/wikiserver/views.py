@@ -222,7 +222,7 @@ def PageList(request, chapter):
     allPages = Page.objects.order_by('-pub_date')
     numOfPages = len(allPages)
 
-    # number of pages to display per list-page
+    # number of pages to display per chapter (list-page)
     chapterSize = 10
 
     # get the total number of chapters

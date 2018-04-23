@@ -1,18 +1,58 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
-<form action="{% url 'wikiserver:page-create' %}" method="post">
-  {% csrf_token %}
+<button id="editor-btn">Edit</button>
+<button id="preview-btn">Preview</button>
 
-  <input type="text" name="title" id="title" value="{{formTitle}}"/>
-  <label for="title">Title</label><br/>
+<div id="editor">
+  <form action="{% url 'wikiserver:page-create' %}" method="post">
+    {% csrf_token %}
 
-  <textarea style="width:400px;height:150px;" name="content" id="content">{{formContent}}</textarea>
-  <label for="content">Content</label><br/>
+    <input type="text" name="title" id="title" value="{{formTitle}}"/>
+    <label for="title">Title</label><br/>
 
-  {% if errorMessage %}
-  <p><strong>{{errorMessage}}</strong></p>
-  {% endif %}
+    <textarea style="width:400px;height:150px;" name="content" id="content">{{formContent}}</textarea>
+    <label for="content">Content</label><br/>
 
-  <input type="submit" value="Create"/>
-</form>
+    <p id="error">
+      {% if errorMessage %}
+      <strong>{{errorMessage}}</strong>
+      {% endif %}
+    </p>
+
+    <input type="submit" value="Create"/>
+  </form>
+</div>
+
+<div id="preview" style="display:none;">
+</div>
+
+<script>
+  $(document).ready(function() {
+    $("#editor-btn").click(function() {
+      document.getElementById("editor").style.display = "block";
+      document.getElementById("preview").style.display = "none";
+    });
+
+    $("#preview-btn").click(function() {
+      $.ajax({
+        type: "POST",
+        dataType: "html",
+        processData: false,
+        url: "https://api.github.com/markdown/raw",
+        data: document.getElementById("content").value,
+        contentType: "text/plain",
+        success: function(data){
+          $("#preview").html("<h1>" + document.getElementById("title").value + "</h1>")
+          $("#preview").append(data);
+          document.getElementById("editor").style.display = "none";
+          document.getElementById("preview").style.display = "block";
+        },
+        error: function(jqXHR, textStatus, error){
+          $("#error").html("<strong>Something went wrong with the preview.</strong>");
+          console.log(jqXHR, textStatus, error);
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}
