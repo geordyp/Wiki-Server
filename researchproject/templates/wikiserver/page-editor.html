@@ -1,30 +1,36 @@
 {% extends 'wikiserver/base.html' %}
 {% block 'body' %}
+{% if creatingNewPage %}
+<h1>New Page</h1>
+{% else %}
+<h1>Edit Page</h1>
+{% endif %}
+
 <button id="editor-btn">Edit</button>
 <button id="preview-btn">Preview</button>
 
 <div id="editor">
-  <form action="{% url 'wikiserver:page-create' %}" method="post">
+  <form action={% if creatingNewPage %}"{% url 'wikiserver:page-create' %}"{% else %}"{% url 'wikiserver:page-edit' pageid=pid %}"{% endif %} method="post">
     {% csrf_token %}
 
-    <input type="text" name="title" id="title" value="{{formTitle}}"/>
+    <input type="text" name="title" id="title" value="{{formTitle}}" {% if disable %}disabled{% endif %}/>
     <label for="title">Title</label><br/>
 
-    <textarea style="width:400px;height:150px;" name="content" id="content">{{formContent}}</textarea>
+    <textarea style="width:400px;height:150px;" name="content" id="content" {% if disable %}disabled{% endif %}>{{formContent}}</textarea>
     <label for="content">Content</label><br/>
 
-    <p id="error">
-      {% if errorMessage %}
-      <strong>{{errorMessage}}</strong>
-      {% endif %}
-    </p>
-
-    <input type="submit" value="Create"/>
+    <input type="submit" value={% if creatingNewPage %}"Create"{% else %}"Save"{% endif %} {% if disable %}disabled{% endif %}/>
   </form>
 </div>
 
 <div id="preview" style="display:none;">
 </div>
+
+<p id="error">
+  {% if errorMessage %}
+  <strong>{{errorMessage}}</strong>
+  {% endif %}
+</p>
 
 <script>
   $(document).ready(function() {

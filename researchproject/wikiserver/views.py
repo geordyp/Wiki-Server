@@ -148,7 +148,9 @@ def PageCreate(request):
         'username': request.user.username,
         'errorMessage': None,
         'formTitle': '',
-        'formContent': ''
+        'formContent': '',
+        'creatingNewPage': True,
+        'disable': False
     }
 
     if request.method == 'POST':
@@ -156,7 +158,7 @@ def PageCreate(request):
         fields = ['title', 'content']
         if not FormValidation.formContainsAll(request.POST, fields):
             state['errorMessage'] = 'Invalid form, did not contain title and/or content'
-            return render(request, 'wikiserver/user-join.html', state, status=400)
+            return render(request, 'wikiserver/page-editor.html', state, status=400)
 
         tInput = state['formTitle'] = request.POST['title']
         cInput = state['formContent'] = request.POST['content']
@@ -164,12 +166,12 @@ def PageCreate(request):
         # validate title
         if len(tInput) < 1:
             state['errorMessage'] = "Please provide a title"
-            return render(request, 'wikiserver/page-create.html', state, status=400)
+            return render(request, 'wikiserver/page-editor.html', state, status=400)
 
         # validate content
         if len(cInput) < 1:
             state['errorMessage'] = "Page must have content"
-            return render(request, 'wikiserver/page-create.html', state, status=400)
+            return render(request, 'wikiserver/page-editor.html', state, status=400)
 
         page = Page(title=tInput, owner=request.user, content=cInput)
         page.save()
@@ -177,7 +179,7 @@ def PageCreate(request):
         return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
 
     else:
-        return render(request, 'wikiserver/page-create.html', state)
+        return render(request, 'wikiserver/page-editor.html', state)
 
 
 def PageView(request, pageid):
@@ -210,6 +212,65 @@ def PageView(request, pageid):
         print('error: %s' % (e,))
 
     return render(request, 'wikiserver/page-view.html', state)
+
+
+@login_required
+def PageEdit(request, pageid):
+    """
+    page edit form
+    """
+
+    state = {
+        'username': request.user.username,
+        'errorMessage': None,
+        'formTitle': '',
+        'formContent': '',
+        'pid': pageid,
+        'creatingNewPage': False,
+        'disable': False
+    }
+
+    try:
+        page = Page.objects.get(id=pageid)
+        if (page.owner != request.user):
+            state['errorMessage'] = 'Only the author can edit this page.'
+            state['formTitle'] = page.title
+            state['formContent'] = page.content
+            state['disable'] = True
+            return render(request, 'wikiserver/page-editor.html', state, status=403)
+    except Page.DoesNotExist:
+        raise Http404("Page does not exist")
+
+    if request.method == 'POST':
+        # validate form
+        fields = ['title', 'content']
+        if not FormValidation.formContainsAll(request.POST, fields):
+            state['errorMessage'] = 'Invalid form, did not contain title and/or content'
+            return render(request, 'wikiserver/page-editor.html', state, status=400)
+
+        tInput = state['formTitle'] = request.POST['title']
+        cInput = state['formContent'] = request.POST['content']
+
+        # validate title
+        if len(tInput) < 1:
+            state['errorMessage'] = "Please provide a title"
+            return render(request, 'wikiserver/page-editor.html', state, status=400)
+
+        # validate content
+        if len(cInput) < 1:
+            state['errorMessage'] = "Page must have content"
+            return render(request, 'wikiserver/page-editor.html', state, status=400)
+
+        page.title = tInput
+        page.content = cInput
+        page.save()
+
+        return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
+
+    else:
+        state['formTitle'] = page.title
+        state['formContent'] = page.content
+        return render(request, 'wikiserver/page-editor.html', state)
 
 
 def PageList(request, chapter):
