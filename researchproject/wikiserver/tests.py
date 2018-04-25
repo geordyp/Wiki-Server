@@ -295,19 +295,106 @@ class PageTests(TestCase):
         test successful page view
         """
         response = self.client.post(reverse('wikiserver:user-join'),
+                                    data={'username':'uniquename',
+                                          'password':'password',
+                                          'verifyPassword':'password'})
+
+        t = 'A Great Title'
+        c = 'And even better content'
+        response = self.client.post(reverse('wikiserver:page-create'),
+                                    data={'title':t,
+                                          'content':c})
+
+        pages = Page.objects.filter(title=t)
+        response = self.client.get(reverse('wikiserver:page-view', args=(pages[0].id,)))
+        self.assertEquals(response.status_code, 200)
+
+
+    def test_page_edit_failure(self):
+        """
+        test failed page edit
+        """
+        self.client.post(reverse('wikiserver:user-join'),
                          data={'username':'uniquename',
                                'password':'password',
                                'verifyPassword':'password'})
 
         t = 'A Great Title'
         c = 'And even better content'
-        response = self.client.post(reverse('wikiserver:page-create'),
+        self.client.post(reverse('wikiserver:page-create'),
                          data={'title':t,
                                'content':c})
 
         pages = Page.objects.filter(title=t)
-        response = self.client.get(reverse('wikiserver:page-view', args=(pages[0].id,)))
-        self.assertEquals(response.status_code, 200)
+        pid = pages[0].id
+
+        self.client.get(reverse('wikiserver:user-logout'))
+        self.client.post(reverse('wikiserver:user-join'),
+                         data={'username':'otheruser',
+                               'password':'password',
+                               'verifyPassword':'password'})
+
+        response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
+                                    data={'title':'A Brand New Title',
+                                          'content':c})
+
+        # only original author can edit their page
+        self.assertEquals(response.status_code, 403)
+
+        self.client.get(reverse('wikiserver:user-logout'))
+        self.client.post(reverse('wikiserver:user-login'),
+                         data={'username':'uniquename',
+                               'password':'password'})
+
+        response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
+                                    data={'title':'',
+                                          'content':c})
+
+        # can't leave title blank
+        self.assertEquals(response.status_code, 400)
+
+        response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
+                                    data={'title':t,
+                                          'content':''})
+
+        # can't leave content blank
+        self.assertEquals(response.status_code, 400)
+
+        response = self.client.post(reverse('wikiserver:page-edit', args=(123456,)),
+                                    data={'title':t,
+                                          'content':''})
+
+        # page doesn't exist
+        self.assertEquals(response.status_code, 404)
+
+
+    def test_page_edit_success(self):
+        """
+        test successful page edit
+        """
+        self.client.post(reverse('wikiserver:user-join'),
+                         data={'username':'uniquename',
+                               'password':'password',
+                               'verifyPassword':'password'})
+
+        t = 'A Great Title'
+        c = 'And even better content'
+        self.client.post(reverse('wikiserver:page-create'),
+                         data={'title':t,
+                               'content':c})
+
+        pages = Page.objects.filter(title=t)
+        originalPage = pages[0]
+
+        newT = 'A Brand New Title'
+        response = self.client.post(reverse('wikiserver:page-edit', args=(originalPage.id,)),
+                                    data={'title':newT,
+                                          'content':c})
+
+        pages = Page.objects.filter(title=newT)
+        editedPage = pages[0]
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(originalPage.id, editedPage.id)
 
 
     def test_page_list_success(self):
