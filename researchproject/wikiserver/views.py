@@ -146,10 +146,10 @@ def PageCreate(request):
 
     state = {
         'username': request.user.username,
-        'errorMessage': None,
+        'creatingNewPage': True,
         'formTitle': '',
         'formContent': '',
-        'creatingNewPage': True,
+        'errorMessage': None,
         'disable': False
     }
 
@@ -222,20 +222,20 @@ def PageEdit(request, pageid):
 
     state = {
         'username': request.user.username,
-        'errorMessage': None,
+        'creatingNewPage': False,
+        'pid': pageid,
         'formTitle': '',
         'formContent': '',
-        'pid': pageid,
-        'creatingNewPage': False,
+        'errorMessage': None,
         'disable': False
     }
 
     try:
         page = Page.objects.get(id=pageid)
         if (page.owner != request.user):
-            state['errorMessage'] = 'Only the author can edit this page.'
             state['formTitle'] = page.title
             state['formContent'] = page.content
+            state['errorMessage'] = 'Only the author can edit this page.'
             state['disable'] = True
             return render(request, 'wikiserver/page-editor.html', state, status=403)
     except Page.DoesNotExist:
