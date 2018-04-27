@@ -337,7 +337,6 @@ class PageTests(TestCase):
         response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
                                     data={'title':'A Brand New Title',
                                           'content':c})
-
         # only original author can edit their page
         self.assertEquals(response.status_code, 403)
 
@@ -349,21 +348,18 @@ class PageTests(TestCase):
         response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
                                     data={'title':'',
                                           'content':c})
-
         # can't leave title blank
         self.assertEquals(response.status_code, 400)
 
         response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
                                     data={'title':t,
                                           'content':''})
-
         # can't leave content blank
         self.assertEquals(response.status_code, 400)
 
         response = self.client.post(reverse('wikiserver:page-edit', args=(123456,)),
                                     data={'title':t,
                                           'content':''})
-
         # page doesn't exist
         self.assertEquals(response.status_code, 404)
 
@@ -393,8 +389,7 @@ class PageTests(TestCase):
 
         pages = Page.objects.filter(title=newT)
         editedPage = pages[0]
-        self.assertEquals(response.status_code, 302)
-        self.assertEquals(originalPage.id, editedPage.id)
+        self.assertRedirects(response, reverse('wikiserver:page-view', args=(editedPage.id,)))
 
 
     def test_page_list_success(self):
@@ -417,8 +412,8 @@ class PageTests(TestCase):
 
         # chapter (list-page) number too high
         response = self.client.get(reverse('wikiserver:page-list', args=(100,)))
-        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('wikiserver:page-list', args=(1,)))
 
         # chapter (list-page) number too low
         response = self.client.get(reverse('wikiserver:page-list', args=(0,)))
-        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('wikiserver:page-list', args=(1,)))
