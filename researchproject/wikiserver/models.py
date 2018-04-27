@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 
 class Page(models.Model):
+    version = models.IntegerField(default=1, null=False, blank=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=300, default='title unavailable', null=False, blank=True)
     content = models.TextField(max_length=40000, default='content unavailable', null=False, blank=True)
