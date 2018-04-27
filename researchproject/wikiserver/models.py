@@ -6,11 +6,13 @@ from django.contrib.auth.models import User
 
 
 class Page(models.Model):
-    version = models.IntegerField(default=1, null=False, blank=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+
+
+class Page_Version(models.Model):
+    page = models.ForeignKey(Page, on_delete=models.CASCADE, null=True)
+    version = models.IntegerField(default=1, null=True)
     title = models.CharField(max_length=300, default='title unavailable', null=False, blank=True)
     content = models.TextField(max_length=40000, default='content unavailable', null=False, blank=True)
-    pub_date = models.DateTimeField('date published', auto_now_add=True, null=True)
-
-    def __str__(self):
-        return "%s BY %s" % self.title, self.owner.username;
+    date_edited = models.DateTimeField(auto_now_add=True, null=True)
