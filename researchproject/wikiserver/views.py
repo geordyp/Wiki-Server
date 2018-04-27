@@ -20,12 +20,12 @@ def IndexView(request):
     home page
     """
 
-    state = {
+    context = {
         'username': request.user.username,
         'recentPages': Page.objects.order_by('-pub_date')[:5]
     }
 
-    return render(request, 'wikiserver/index.html', state)
+    return render(request, 'wikiserver/index.html', context)
 
 
 def UserJoinView(request):
@@ -36,7 +36,7 @@ def UserJoinView(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
-    state = {
+    context = {
         'username': None,
         'next': request.GET.get('next', None),
         'errorMessage': None,
@@ -47,30 +47,30 @@ def UserJoinView(request):
         # validate form
         fields = ['username', 'password', 'verifyPassword']
         if not FormValidation.formContainsAll(request.POST, fields):
-            state['errorMessage'] = 'Invalid form, did not contain username, password, and/or verifyPassword'
-            return render(request, 'wikiserver/user-join.html', state, status=400)
+            context['errorMessage'] = 'Invalid form, did not contain username, password, and/or verifyPassword'
+            return render(request, 'wikiserver/user-join.html', context, status=400)
 
-        uInput = state['formUsername'] = str(request.POST['username'])
+        uInput = context['formUsername'] = str(request.POST['username'])
         pInput = str(request.POST['password'])
         vpInput = str(request.POST['verifyPassword'])
 
         # validate, username is unique and alpha-numeric
         validation = CreateUserValidation.isValidUsername(uInput)
         if not validation['isValid']:
-            state['errorMessage'] = validation['message']
-            state['formUsername'] = ''
-            return render(request, 'wikiserver/user-join.html', state, status=400)
+            context['errorMessage'] = validation['message']
+            context['formUsername'] = ''
+            return render(request, 'wikiserver/user-join.html', context, status=400)
 
         # validate, password is at least 4 characters
         validation = CreateUserValidation.isValidPassword(pInput)
         if not validation['isValid']:
-            state['errorMessage'] = validation['message']
-            return render(request, 'wikiserver/user-join.html', state, status=400)
+            context['errorMessage'] = validation['message']
+            return render(request, 'wikiserver/user-join.html', context, status=400)
 
         # validate, passwords match
         if pInput != vpInput:
-            state['errorMessage'] = 'Passwords do not match'
-            return render(request, 'wikiserver/user-join.html', state, status=400)
+            context['errorMessage'] = 'Passwords do not match'
+            return render(request, 'wikiserver/user-join.html', context, status=400)
 
         # create user
         user = User.objects.create_user(uInput, None, pInput)
@@ -80,13 +80,13 @@ def UserJoinView(request):
         login(request, user)
 
         # redirect
-        if state['next'] is None:
-            state['next'] = reverse('wikiserver:index', args=())
+        if context['next'] is None:
+            context['next'] = reverse('wikiserver:index', args=())
 
-        return HttpResponseRedirect(state['next'])
+        return HttpResponseRedirect(context['next'])
 
     else:
-        return render(request, 'wikiserver/user-join.html', state)
+        return render(request, 'wikiserver/user-join.html', context)
 
 
 def UserLogInView(request):
@@ -97,7 +97,7 @@ def UserLogInView(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('wikiserver:index', args=()))
 
-    state = {
+    context = {
         'username': None,
         'next': request.GET.get('next', None),
         'errorMessage': None
@@ -107,8 +107,8 @@ def UserLogInView(request):
         # validate form
         fields = ['username', 'password']
         if not FormValidation.formContainsAll(request.POST, fields):
-            state['errorMessage'] = 'Invalid form, did not contain username and/or password'
-            return render(request, 'wikiserver/user-login.html', state, status=400)
+            context['errorMessage'] = 'Invalid form, did not contain username and/or password'
+            return render(request, 'wikiserver/user-login.html', context, status=400)
 
         uInput = str(request.POST['username'])
         pInput = str(request.POST['password'])
@@ -116,17 +116,17 @@ def UserLogInView(request):
         # authenticate user
         user = authenticate(username=uInput, password=pInput)
         if user is None:
-            state['errorMessage'] = 'Invalid login, please try again'
-            return render(request, 'wikiserver/user-login.html', state, status=400)
+            context['errorMessage'] = 'Invalid login, please try again'
+            return render(request, 'wikiserver/user-login.html', context, status=400)
         else:
             login(request, user)
-            if state['next'] is None:
-                state['next'] = reverse('wikiserver:index', args=())
+            if context['next'] is None:
+                context['next'] = reverse('wikiserver:index', args=())
 
-            return HttpResponseRedirect(state['next'])
+            return HttpResponseRedirect(context['next'])
 
     else:
-        return render(request, 'wikiserver/user-login.html', state)
+        return render(request, 'wikiserver/user-login.html', context)
 
 
 def UserLogOut(request):
@@ -144,7 +144,7 @@ def PageCreate(request):
     page creation form
     """
 
-    state = {
+    context = {
         'username': request.user.username,
         'creatingNewPage': True,
         'formTitle': '',
@@ -157,21 +157,21 @@ def PageCreate(request):
         # validate form
         fields = ['title', 'content']
         if not FormValidation.formContainsAll(request.POST, fields):
-            state['errorMessage'] = 'Invalid form, did not contain title and/or content'
-            return render(request, 'wikiserver/page-editor.html', state, status=400)
+            context['errorMessage'] = 'Invalid form, did not contain title and/or content'
+            return render(request, 'wikiserver/page-editor.html', context, status=400)
 
-        tInput = state['formTitle'] = request.POST['title']
-        cInput = state['formContent'] = request.POST['content']
+        tInput = context['formTitle'] = request.POST['title']
+        cInput = context['formContent'] = request.POST['content']
 
         # validate title
         if len(tInput) < 1:
-            state['errorMessage'] = "Please provide a title"
-            return render(request, 'wikiserver/page-editor.html', state, status=400)
+            context['errorMessage'] = "Please provide a title"
+            return render(request, 'wikiserver/page-editor.html', context, status=400)
 
         # validate content
         if len(cInput) < 1:
-            state['errorMessage'] = "Page must have content"
-            return render(request, 'wikiserver/page-editor.html', state, status=400)
+            context['errorMessage'] = "Page must have content"
+            return render(request, 'wikiserver/page-editor.html', context, status=400)
 
         page = Page(title=tInput, owner=request.user, content=cInput)
         page.save()
@@ -179,7 +179,7 @@ def PageCreate(request):
         return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
 
     else:
-        return render(request, 'wikiserver/page-editor.html', state)
+        return render(request, 'wikiserver/page-editor.html', context)
 
 
 def PageView(request, pageid):
@@ -187,31 +187,31 @@ def PageView(request, pageid):
     view a page
     """
 
-    state = {
+    context = {
         'username': request.user.username,
         'page': {},
         'markdownAvailable': True
     }
 
     try:
-        state['page'] = Page.objects.get(id=pageid)
+        context['page'] = Page.objects.get(id=pageid)
     except Page.DoesNotExist:
         raise Http404("Page does not exist")
 
     try:
         headers = {'Content-Type': 'text/plain'}
-        data = state['page'].content
+        data = context['page'].content
         md = requests.post('https://api.github.com/markdown/raw', headers=headers, data=data)
         if md.status_code < 300:
-            state['page'].content = md.text
+            context['page'].content = md.text
         else:
-            state['markdownAvailable'] = False
+            context['markdownAvailable'] = False
             print('%d error: %s' % (md.status_code, md.text,))
     except requests.exceptions.RequestException as e:
-        state['markdownAvailable'] = False
+        context['markdownAvailable'] = False
         print('error: %s' % (e,))
 
-    return render(request, 'wikiserver/page-view.html', state)
+    return render(request, 'wikiserver/page-view.html', context)
 
 
 @login_required
@@ -220,7 +220,7 @@ def PageEdit(request, pageid):
     page edit form
     """
 
-    state = {
+    context = {
         'username': request.user.username,
         'creatingNewPage': False,
         'pid': pageid,
@@ -233,11 +233,11 @@ def PageEdit(request, pageid):
     try:
         page = Page.objects.get(id=pageid)
         if (page.owner != request.user):
-            state['formTitle'] = page.title
-            state['formContent'] = page.content
-            state['errorMessage'] = 'Only the author can edit this page.'
-            state['disable'] = True
-            return render(request, 'wikiserver/page-editor.html', state, status=403)
+            context['formTitle'] = page.title
+            context['formContent'] = page.content
+            context['errorMessage'] = 'Only the author can edit this page.'
+            context['disable'] = True
+            return render(request, 'wikiserver/page-editor.html', context, status=403)
     except Page.DoesNotExist:
         raise Http404("Page does not exist")
 
@@ -245,21 +245,21 @@ def PageEdit(request, pageid):
         # validate form
         fields = ['title', 'content']
         if not FormValidation.formContainsAll(request.POST, fields):
-            state['errorMessage'] = 'Invalid form, did not contain title and/or content'
-            return render(request, 'wikiserver/page-editor.html', state, status=400)
+            context['errorMessage'] = 'Invalid form, did not contain title and/or content'
+            return render(request, 'wikiserver/page-editor.html', context, status=400)
 
-        tInput = state['formTitle'] = request.POST['title']
-        cInput = state['formContent'] = request.POST['content']
+        tInput = context['formTitle'] = request.POST['title']
+        cInput = context['formContent'] = request.POST['content']
 
         # validate title
         if len(tInput) < 1:
-            state['errorMessage'] = "Please provide a title"
-            return render(request, 'wikiserver/page-editor.html', state, status=400)
+            context['errorMessage'] = "Please provide a title"
+            return render(request, 'wikiserver/page-editor.html', context, status=400)
 
         # validate content
         if len(cInput) < 1:
-            state['errorMessage'] = "Page must have content"
-            return render(request, 'wikiserver/page-editor.html', state, status=400)
+            context['errorMessage'] = "Page must have content"
+            return render(request, 'wikiserver/page-editor.html', context, status=400)
 
         page.title = tInput
         page.content = cInput
@@ -268,9 +268,9 @@ def PageEdit(request, pageid):
         return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
 
     else:
-        state['formTitle'] = page.title
-        state['formContent'] = page.content
-        return render(request, 'wikiserver/page-editor.html', state)
+        context['formTitle'] = page.title
+        context['formContent'] = page.content
+        return render(request, 'wikiserver/page-editor.html', context)
 
 
 def PageList(request, chapter):
@@ -279,7 +279,7 @@ def PageList(request, chapter):
     chapter is equivalent to list-page
     """
 
-    state = {
+    context = {
         'username': request.user.username,
         'pagesToDisplay': [],
         'chapterLinks': []
@@ -306,18 +306,18 @@ def PageList(request, chapter):
 
     # get pages to display
     start = (chapter - 1) * chapterSize
-    state['pagesToDisplay'] = allPages[start : start + chapterSize]
+    context['pagesToDisplay'] = allPages[start : start + chapterSize]
 
     # if has previous
     if curr > 1:
-        state['chapterLinks'].append({'link': curr - 1, 'text': 'prev'})
+        context['chapterLinks'].append({'link': curr - 1, 'text': 'prev'})
 
     # get the full list of chapters
     for i in range(1, numOfChapters + 1):
-        state['chapterLinks'].append({'link': i, 'text': i})
+        context['chapterLinks'].append({'link': i, 'text': i})
 
     # if has next
     if curr < numOfChapters:
-        state['chapterLinks'].append({'link': curr + 1, 'text': 'next'})
+        context['chapterLinks'].append({'link': curr + 1, 'text': 'next'})
 
-    return render(request, 'wikiserver/page-list.html', state)
+    return render(request, 'wikiserver/page-list.html', context)
