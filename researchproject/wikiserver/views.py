@@ -178,8 +178,10 @@ def PageCreate(request):
             context['errorMessage'] = "Page must have content"
             return render(request, 'wikiserver/page-editor.html', context, status=400)
 
-        page = Page(title=tInput, owner=request.user, content=cInput)
+        page = Page(owner=request.user)
         page.save()
+        pageVersion = Page_Version(page=page, version=1, title=tInput, content=cInput)
+        pageVersion.save()
 
         return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
 
@@ -234,16 +236,16 @@ def PageEdit(request, pageid):
         'disable': False
     }
 
-    try:
-        page = Page.objects.get(id=pageid)
-        if (page.owner != request.user):
-            context['formTitle'] = page.title
-            context['formContent'] = page.content
-            context['errorMessage'] = 'Only the author can edit this page.'
-            context['disable'] = True
-            return render(request, 'wikiserver/page-editor.html', context, status=403)
-    except Page.DoesNotExist:
+    pageVersion = PageUtil.getLatestVersion(pageid)
+    if pageVersion == None:
         raise Http404("Page does not exist")
+
+    if (pageVersion.page.owner != request.user):
+        context['formTitle'] = pageVersion.title
+        context['formContent'] = pageVersion.content
+        context['errorMessage'] = 'Only the author can edit this page.'
+        context['disable'] = True
+        return render(request, 'wikiserver/page-editor.html', context, status=403)
 
     if request.method == 'POST':
         # validate form
@@ -265,15 +267,15 @@ def PageEdit(request, pageid):
             context['errorMessage'] = "Page must have content"
             return render(request, 'wikiserver/page-editor.html', context, status=400)
 
-        page.title = tInput
-        page.content = cInput
-        page.save()
 
-        return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
+        newPageVersion = Page_Version(page_id=pageid, version=(pageVersion.version+1), title=tInput, content=cInput)
+        newPageVersion.save()
+
+        return HttpResponseRedirect(reverse('wikiserver:page-view', args=(pageid,)))
 
     else:
-        context['formTitle'] = page.title
-        context['formContent'] = page.content
+        context['formTitle'] = pageVersion.title
+        context['formContent'] = pageVersion.content
         return render(request, 'wikiserver/page-editor.html', context)
 
 
