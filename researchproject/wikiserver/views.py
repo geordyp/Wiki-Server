@@ -26,8 +26,8 @@ def IndexView(request):
     }
 
     pages = reversed(Page.objects.order_by('-date_created')[:5])
-    # get latest versions
     for p in pages:
+        # get latest versions
         context['recentPages'].append(PageUtil.getLatestVersion(p.id))
 
     return render(request, 'wikiserver/index.html', context)
@@ -292,7 +292,7 @@ def PageList(request, chapter):
     }
 
     # get all pages
-    allPages = Page.objects.order_by('-pub_date')
+    allPages = Page.objects.order_by('-date_created')
     numOfPages = len(allPages)
 
     # number of pages to display per chapter (list-page)
@@ -312,7 +312,9 @@ def PageList(request, chapter):
 
     # get pages to display
     start = (chapter - 1) * chapterSize
-    context['pagesToDisplay'] = allPages[start : start + chapterSize]
+    for p in allPages[start : start + chapterSize]:
+        # get latest versions
+        context['pagesToDisplay'].append(PageUtil.getLatestVersion(p.id))
 
     # if has previous
     if curr > 1:

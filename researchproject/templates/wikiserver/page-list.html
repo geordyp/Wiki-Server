@@ -4,7 +4,7 @@
 <h3>All Pages</h3>
 <ul>
 {% for p in pagesToDisplay %}
-  <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' p.id %}">{{p.title}}</a> by {{p.owner.username}}</li>
+  <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' p.page.id %}">{{p.title}}</a> by {{p.page.owner.username}}</li>
 {% endfor %}
 </ul>
 
