@@ -198,9 +198,8 @@ def PageView(request, pageid):
         'markdownAvailable': True
     }
 
-    try:
-        context['page'] = Page.objects.get(id=pageid)
-    except Page.DoesNotExist:
+    context['page'] = PageUtil.getLatestVersion(pageid)
+    if context['page'] == None:
         raise Http404("Page does not exist")
 
     try:
