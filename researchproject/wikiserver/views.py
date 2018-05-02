@@ -10,8 +10,8 @@ from django.contrib.auth import authenticate, logout, login
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 
-from .util import CreateUserValidation, FormValidation
-from .models import Page
+from .util import CreateUserValidation, FormValidation, PageUtil
+from .models import Page, Page_Version
 import requests
 
 
@@ -22,8 +22,13 @@ def IndexView(request):
 
     context = {
         'username': request.user.username,
-        'recentPages': Page.objects.order_by('-pub_date')[:5]
+        'recentPages': []
     }
+
+    pages = reversed(Page.objects.order_by('-date_created')[:5])
+    # get latest versions
+    for p in pages:
+        context['recentPages'].append(PageUtil.getLatestVersion(p.id))
 
     return render(request, 'wikiserver/index.html', context)
 
@@ -290,7 +295,7 @@ def PageList(request, chapter):
     numOfPages = len(allPages)
 
     # number of pages to display per chapter (list-page)
-    chapterSize = 10
+    chapterSize = 2
 
     # get the total number of chapters
     numOfChapters = numOfPages / chapterSize

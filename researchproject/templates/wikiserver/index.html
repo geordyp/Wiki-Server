@@ -11,7 +11,7 @@
   <h3>Recently Created Pages</h3>
   <ul>
   {% for p in recentPages %}
-    <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' pageid=p.id %}">{{ p.title }}</a> by {{ p.owner.username }}</li>
+    <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-view' pageid=p.page.id %}">{{ p.title }}</a> by {{ p.page.owner.username }}</li>
   {% endfor %}
   </ul>
   <p><a href="{% url 'wikiserver:page-list' chapter=1 %}">View all pages</a></p>

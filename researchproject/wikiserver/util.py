@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
+from .models import Page_Version
 
 import hashlib
 import random
@@ -56,3 +57,10 @@ class CreateUserValidation():
             return {'isValid':False, 'message':'Invalid password, please create a password with at least 4 characters'}
 
         return {'isValid':True, 'message':'valid username'}
+
+
+class PageUtil():
+
+    @staticmethod
+    def getLatestVersion(p_id):
+        return Page_Version.objects.filter(page_id=p_id).order_by('version').first()
