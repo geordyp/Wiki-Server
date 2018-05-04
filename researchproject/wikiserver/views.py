@@ -22,13 +22,8 @@ def IndexView(request):
 
     context = {
         'username': request.user.username,
-        'recentPages': []
+        'recentPages': Page.objects.order_by('-date_created')[:5]
     }
-
-    pages = reversed(Page.objects.order_by('-date_created')[:5])
-    for p in pages:
-        # get latest versions
-        context['recentPages'].append(PageUtil.getLatestVersion(p.id))
 
     return render(request, 'wikiserver/index.html', context)
 
@@ -178,10 +173,8 @@ def PageCreate(request):
             context['errorMessage'] = "Page must have content"
             return render(request, 'wikiserver/page-editor.html', context, status=400)
 
-        page = Page(owner=request.user)
+        page = Page(owner=request.user, title=tInput, content=cInput)
         page.save()
-        pageVersion = Page_Version(page=page, version=1, title=tInput, content=cInput)
-        pageVersion.save()
 
         return HttpResponseRedirect(reverse('wikiserver:page-view', args=(page.id,)))
 
@@ -200,8 +193,9 @@ def PageView(request, pageid):
         'markdownAvailable': True
     }
 
-    context['page'] = PageUtil.getLatestVersion(pageid)
-    if context['page'] == None:
+    try:
+        context['page'] = Page.objects.get(id=pageid)
+    except Page.DoesNotExist:
         raise Http404("Page does not exist")
 
     try:
@@ -236,16 +230,16 @@ def PageEdit(request, pageid):
         'disable': False
     }
 
-    pageVersion = PageUtil.getLatestVersion(pageid)
-    if pageVersion == None:
+    try:
+        page = Page.objects.get(id=pageid)
+        if (page.owner != request.user):
+            context['formTitle'] = page.title
+            context['formContent'] = page.content
+            context['errorMessage'] = 'Only the author can edit this page.'
+            context['disable'] = True
+            return render(request, 'wikiserver/page-editor.html', context, status=403)
+    except Page.DoesNotExist:
         raise Http404("Page does not exist")
-
-    if (pageVersion.page.owner != request.user):
-        context['formTitle'] = pageVersion.title
-        context['formContent'] = pageVersion.content
-        context['errorMessage'] = 'Only the author can edit this page.'
-        context['disable'] = True
-        return render(request, 'wikiserver/page-editor.html', context, status=403)
 
     if request.method == 'POST':
         # validate form
@@ -267,15 +261,22 @@ def PageEdit(request, pageid):
             context['errorMessage'] = "Page must have content"
             return render(request, 'wikiserver/page-editor.html', context, status=400)
 
+        # if there wasn't a change, don't save it
+        if page.title != tInput or page.content != cInput:
+            latestVersion = PageUtil.getLatestVersion(pageid)
+            v = 1 if latestVersion == None else latestVersion.version + 1
+            previousVersion = Page_Version(page_id=pageid, version=v, title=page.title, content=page.content)
+            previousVersion.save()
 
-        newPageVersion = Page_Version(page_id=pageid, version=(pageVersion.version+1), title=tInput, content=cInput)
-        newPageVersion.save()
+            page.title = tInput
+            page.content = cInput
+            page.save()
 
         return HttpResponseRedirect(reverse('wikiserver:page-view', args=(pageid,)))
 
     else:
-        context['formTitle'] = pageVersion.title
-        context['formContent'] = pageVersion.content
+        context['formTitle'] = page.title
+        context['formContent'] = page.content
         return render(request, 'wikiserver/page-editor.html', context)
 
 
@@ -312,9 +313,7 @@ def PageList(request, chapter):
 
     # get pages to display
     start = (chapter - 1) * chapterSize
-    for p in allPages[start : start + chapterSize]:
-        # get latest versions
-        context['pagesToDisplay'].append(PageUtil.getLatestVersion(p.id))
+    context['pagesToDisplay'] = allPages[start : start + chapterSize]
 
     # if has previous
     if curr > 1:
