@@ -11,4 +11,9 @@
   <p>Something went wrong with the Markdown converter. Please try refreshing the page.</p>
   {% endif %}
 </div>
+
+{% if canEdit %}
+<a href="{% url 'wikiserver:page-edit' pageid=page.id %}">Edit</a>
+{% endif %}
+
 {% endblock %}

@@ -189,6 +189,7 @@ def PageView(request, pageid):
 
     context = {
         'username': request.user.username,
+        'canEdit': False,
         'page': {},
         'markdownAvailable': True
     }
@@ -197,6 +198,9 @@ def PageView(request, pageid):
         context['page'] = Page.objects.get(id=pageid)
     except Page.DoesNotExist:
         raise Http404("Page does not exist")
+
+    if context['page'].owner.username == context['username']:
+        context['canEdit'] = True
 
     try:
         headers = {'Content-Type': 'text/plain'}
