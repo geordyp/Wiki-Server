@@ -1,0 +1,16 @@
+{% extends 'wikiserver/base.html' %}
+{% block 'body' %}
+
+<h3>Previous Versions of This Page</h3>
+<ul>
+{% for v in versionsToDisplay %}
+  <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-version-view' pageid=v.page_id versionid=v.version %}">{{v.version}}: {{v.date_edited}}</a></li>
+{% endfor %}
+</ul>
+
+<p style="text-align:center;">
+  {% if prev %}<a href="{% url 'wikiserver:page-versions' pageid=pid chapter=prev %}">Newer</a>{% endif %}
+  {% if next %}<a href="{% url 'wikiserver:page-versions' pageid=pid chapter=next %}">Older</a>{% endif %}
+</p>
+
+{% endblock %}

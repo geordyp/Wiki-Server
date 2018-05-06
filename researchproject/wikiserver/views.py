@@ -218,6 +218,56 @@ def PageView(request, pageid):
     return render(request, 'wikiserver/page-view.html', context)
 
 
+def PageList(request, chapter):
+    """
+    view a list of all pages, 10 per chapter
+    chapter is equivalent to list-page
+    """
+
+    context = {
+        'username': request.user.username,
+        'pagesToDisplay': [],
+        'chapterLinks': []
+    }
+
+    # get all pages
+    allPages = Page.objects.order_by('-date_created')
+    numOfPages = len(allPages)
+
+    # number of pages to display per chapter (list-page)
+    chapterSize = 2
+
+    # get the total number of chapters
+    numOfChapters = numOfPages / chapterSize
+    if numOfPages % chapterSize != 0:
+        numOfChapters += 1
+
+    # error check current chapter
+    chapter = int(chapter)
+    if chapter < 1:
+        return HttpResponseRedirect(reverse('wikiserver:page-list', args=(1,)))
+    elif chapter > numOfChapters:
+        return HttpResponseRedirect(reverse('wikiserver:page-list', args=(numOfChapters,)))
+
+    # get pages to display
+    start = (chapter - 1) * chapterSize
+    context['pagesToDisplay'] = allPages[start : start + chapterSize]
+
+    # if has previous
+    if chapter > 1:
+        context['chapterLinks'].append({'link': chapter - 1, 'text': 'prev'})
+
+    # get the full list of chapters
+    for i in range(1, numOfChapters + 1):
+        context['chapterLinks'].append({'link': i, 'text': i})
+
+    # if has next
+    if chapter < numOfChapters:
+        context['chapterLinks'].append({'link': chapter + 1, 'text': 'next'})
+
+    return render(request, 'wikiserver/page-list.html', context)
+
+
 @login_required
 def PageEdit(request, pageid):
     """
@@ -284,51 +334,57 @@ def PageEdit(request, pageid):
         return render(request, 'wikiserver/page-editor.html', context)
 
 
-def PageList(request, chapter):
+@login_required
+def PageVersions(request, pageid, chapter):
     """
-    view a list of all pages, 10 per chapter
-    chapter is equivalent to list-page
+    view a list of versions for a given page, 10 per chapter
+    chapter is equivalent to version-page
     """
 
     context = {
         'username': request.user.username,
-        'pagesToDisplay': [],
-        'chapterLinks': []
+        'versionsToDisplay': [],
+        'pid': pageid,
+        'next': None,
+        'prev': None
     }
 
-    # get all pages
-    allPages = Page.objects.order_by('-date_created')
-    numOfPages = len(allPages)
+    # get all versions (new to old)
+    allVersions = Page_Version.objects.filter(page_id=pageid).order_by('-version')
+    numOfVersions = len(allVersions)
 
     # number of pages to display per chapter (list-page)
-    chapterSize = 2
+    chapterSize = 10
 
     # get the total number of chapters
-    numOfChapters = numOfPages / chapterSize
-    if numOfPages % chapterSize != 0:
+    numOfChapters = numOfVersions / chapterSize
+    if numOfVersions % chapterSize != 0:
         numOfChapters += 1
 
     # error check current chapter
-    chapter = curr = int(chapter)
+    chapter = int(chapter)
     if chapter < 1:
-        return HttpResponseRedirect(reverse('wikiserver:page-list', args=(1,)))
+        return HttpResponseRedirect(reverse('wikiserver:page-versions',
+                                    args=(pageid, 1,)))
     elif chapter > numOfChapters:
-        return HttpResponseRedirect(reverse('wikiserver:page-list', args=(numOfChapters,)))
+        return HttpResponseRedirect(reverse('wikiserver:page-versions',
+                                    args=(pageid, numOfChapters,)))
 
-    # get pages to display
+    # get versions to display
     start = (chapter - 1) * chapterSize
-    context['pagesToDisplay'] = allPages[start : start + chapterSize]
+    context['versionsToDisplay'] = allVersions[start : start + chapterSize]
 
     # if has previous
-    if curr > 1:
-        context['chapterLinks'].append({'link': curr - 1, 'text': 'prev'})
-
-    # get the full list of chapters
-    for i in range(1, numOfChapters + 1):
-        context['chapterLinks'].append({'link': i, 'text': i})
+    if chapter > 1:
+        context['prev'] = chapter - 1
 
     # if has next
-    if curr < numOfChapters:
-        context['chapterLinks'].append({'link': curr + 1, 'text': 'next'})
+    if chapter < numOfChapters:
+        context['next'] = chapter + 1
 
-    return render(request, 'wikiserver/page-list.html', context)
+    return render(request, 'wikiserver/page-versions.html', context)
+
+
+@login_required
+def PageVersionView(request, pageid, versionid):
+    return render(request, 'wikiserver/page-version-view.html')

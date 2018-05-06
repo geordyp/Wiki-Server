@@ -8,6 +8,7 @@ import hashlib
 import random
 import string
 
+
 # TODO consolidate validation classes into one
 class FormValidation():
     """
@@ -64,3 +65,8 @@ class PageUtil():
     @staticmethod
     def getLatestVersion(p_id):
         return Page_Version.objects.filter(page_id=p_id).order_by('-version').first()
+
+
+    @staticmethod
+    def getPreviousVersions(p_id):
+        return Page_Version.objects.filter(page_id=p_id).order_by('-version')
