@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 
-from .models import Page
+from .models import Page, Page_Version
 
 
 class UserTests(TestCase):
@@ -290,17 +290,27 @@ class PageTests(TestCase):
                          data={'title':t,
                                'content':c})
 
-        pages = Page.objects.filter(title=t)
-        originalPage = pages[0]
+        originalPage = Page.objects.filter(title=t).first()
 
         newT = 'A Brand New Title'
         response = self.client.post(reverse('wikiserver:page-edit', args=(originalPage.id,)),
                                     data={'title':newT,
                                           'content':c})
 
-        pages = Page.objects.filter(title=newT)
-        editedPage = pages[0]
+        editedPage = Page.objects.filter(title=newT).first()
         self.assertRedirects(response, reverse('wikiserver:page-view', args=(editedPage.id,)))
+
+        # previous version stored
+        newC = 'Some new content'
+        self.client.post(reverse('wikiserver:page-edit', args=(originalPage.id,)),
+                         data={'title':newT,
+                         'content':newC})
+
+        prevVersions = Page_Version.objects.filter(page_id=editedPage.id).order_by('version')
+        self.assertEquals(len(prevVersions), 2)
+        self.assertEquals(prevVersions[0].version, 1)
+        self.assertEquals(prevVersions[1].version, 2)
+        self.assertEquals(prevVersions[1].content, c)
 
 
     def test_page_list_success(self):
