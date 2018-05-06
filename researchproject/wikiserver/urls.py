@@ -23,8 +23,8 @@ urlpatterns = [
     url(r'^page/list/(?P<chapter>[0-9]+)/$', views.PageList, name='page-list'),
     # ex: /wiki/page/1/edit
     url(r'^page/(?P<pageid>[0-9]+)/edit/$', views.PageEdit, name='page-edit'),
-    # ex: /wiki/page/1/versions/1
-    url(r'^page/(?P<pageid>[0-9]+)/versions/(?P<chapter>[0-9]+)/$', views.PageVersions, name='page-versions'),
+    # ex: /wiki/page/1/version/list/1
+    url(r'^page/(?P<pageid>[0-9]+)/version/list/(?P<chapter>[0-9]+)/$', views.PageVersionList, name='page-version-list'),
     # ex: /wiki/page/1/version/1
     url(r'^page/(?P<pageid>[0-9]+)/version/(?P<versionid>[0-9]+)/$', views.PageVersionView, name='page-version-view'),
 

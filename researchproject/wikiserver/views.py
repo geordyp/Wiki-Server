@@ -335,7 +335,7 @@ def PageEdit(request, pageid):
 
 
 @login_required
-def PageVersions(request, pageid, chapter):
+def PageVersionList(request, pageid, chapter):
     """
     view a list of versions for a given page, 10 per chapter
     chapter is equivalent to version-page
@@ -364,10 +364,10 @@ def PageVersions(request, pageid, chapter):
     # error check current chapter
     chapter = int(chapter)
     if chapter < 1:
-        return HttpResponseRedirect(reverse('wikiserver:page-versions',
+        return HttpResponseRedirect(reverse('wikiserver:page-version-list',
                                     args=(pageid, 1,)))
     elif chapter > numOfChapters:
-        return HttpResponseRedirect(reverse('wikiserver:page-versions',
+        return HttpResponseRedirect(reverse('wikiserver:page-version-list',
                                     args=(pageid, numOfChapters,)))
 
     # get versions to display
@@ -382,7 +382,7 @@ def PageVersions(request, pageid, chapter):
     if chapter < numOfChapters:
         context['next'] = chapter + 1
 
-    return render(request, 'wikiserver/page-versions.html', context)
+    return render(request, 'wikiserver/page-version-list.html', context)
 
 
 @login_required

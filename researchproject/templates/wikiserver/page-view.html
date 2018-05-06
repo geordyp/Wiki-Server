@@ -14,7 +14,7 @@
 
 {% if canEdit %}
 <a href="{% url 'wikiserver:page-edit' pageid=page.id %}">Edit</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="{% url 'wikiserver:page-versions' pageid=page.id chapter=1 %}">Previous Versions</a>
+<a href="{% url 'wikiserver:page-version-list' pageid=page.id chapter=1 %}">Previous Versions</a>
 {% endif %}
 
 {% endblock %}

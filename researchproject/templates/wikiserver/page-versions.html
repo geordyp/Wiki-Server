@@ -9,8 +9,8 @@
 </ul>
 
 <p style="text-align:center;">
-  {% if prev %}<a href="{% url 'wikiserver:page-versions' pageid=pid chapter=prev %}">Newer</a>{% endif %}
-  {% if next %}<a href="{% url 'wikiserver:page-versions' pageid=pid chapter=next %}">Older</a>{% endif %}
+  {% if prev %}<a href="{% url 'wikiserver:page-version-list' pageid=pid chapter=prev %}">Newer</a>{% endif %}
+  {% if next %}<a href="{% url 'wikiserver:page-version-list' pageid=pid chapter=next %}">Older</a>{% endif %}
 </p>
 
 {% endblock %}
