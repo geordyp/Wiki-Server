@@ -13,32 +13,14 @@ class UserTests(TestCase):
     tests for user actions
     """
 
-    def test_create_user_account_password_failure(self):
+    def test_create_user_account_failure(self):
         """
         test invalid input for password in user account creation
         """
-        # no passwords
-        response = self.client.post(reverse('wikiserver:user-join'),
-                                    data={'username':'uniquename'})
-        self.assertEqual(response.status_code, 400)
-
-        # no password
-        response = self.client.post(reverse('wikiserver:user-join'),
-                                    data={'username':'uniquename',
-                                          'verifyPassword':''})
-        self.assertEqual(response.status_code, 400)
-
-        # no verify password
+        # missing field
         response = self.client.post(reverse('wikiserver:user-join'),
                                     data={'username':'uniquename',
                                           'password':''})
-        self.assertEqual(response.status_code, 400)
-
-        # blank password and verify password
-        response = self.client.post(reverse('wikiserver:user-join'),
-                                    data={'username':'uniquename',
-                                          'password':'',
-                                          'verifyPassword':''})
         self.assertEqual(response.status_code, 400)
 
         # short password
@@ -55,17 +37,6 @@ class UserTests(TestCase):
                                           'verifyPassword':'passwords'})
         self.assertEqual(response.status_code, 400)
 
-
-    def test_create_user_account_username_failure(self):
-        """
-        test invalid input for username in user account creation
-        """
-        # no username
-        response = self.client.post(reverse('wikiserver:user-join'),
-                                    data={'password':'password',
-                                          'verifyPassword':'password'})
-        self.assertEqual(response.status_code, 400)
-
         # blank username
         response = self.client.post(reverse('wikiserver:user-join'),
                                     data={'username':'',
@@ -76,13 +47,6 @@ class UserTests(TestCase):
         # non-alpha-numeric username
         response = self.client.post(reverse('wikiserver:user-join'),
                                     data={'username':'yo!',
-                                          'password':'password',
-                                          'verifyPassword':'password'})
-        self.assertEqual(response.status_code, 400)
-
-        # non-alpha-numeric username
-        response = self.client.post(reverse('wikiserver:user-join'),
-                                    data={'username':'johnny-apple-seed',
                                           'password':'password',
                                           'verifyPassword':'password'})
         self.assertEqual(response.status_code, 400)
@@ -126,7 +90,7 @@ class UserTests(TestCase):
         self.assertRedirects(response, reverse('wikiserver:index'))
 
 
-    def test_user_login_username_failure(self):
+    def test_user_login_failure(self):
         """
         test invalid username
         """
@@ -136,37 +100,9 @@ class UserTests(TestCase):
                                'verifyPassword':'password'})
         self.client.get(reverse('wikiserver:user-logout'))
 
-        # no username
+        # missing field
         response = self.client.post(reverse('wikiserver:user-login'),
                                     data={'password':'password'})
-        self.assertEqual(response.status_code, 400)
-
-        # blank username
-        response = self.client.post(reverse('wikiserver:user-login'),
-                                    data={'username':'',
-                                          'password':'password'})
-        self.assertEqual(response.status_code, 400)
-
-
-    def test_user_login_password_failure(self):
-        """
-        test invalid password
-        """
-        self.client.post(reverse('wikiserver:user-join'),
-                         data={'username':'uniquename',
-                               'password':'password',
-                               'verifyPassword':'password'})
-        self.client.get(reverse('wikiserver:user-logout'))
-
-        # no password
-        response = self.client.post(reverse('wikiserver:user-login'),
-                                    data={'username':'uniquename'})
-        self.assertEqual(response.status_code, 400)
-
-        # blank password
-        response = self.client.post(reverse('wikiserver:user-login'),
-                                    data={'username':'uniquename',
-                                          'password':''})
         self.assertEqual(response.status_code, 400)
 
         # wrong password
@@ -210,7 +146,7 @@ class PageTests(TestCase):
     tests for page actions
     """
 
-    def test_page_creation_logged_in_failure(self):
+    def test_page_creation_login_required(self):
         """
         test page creation failure when not logged in
         """
@@ -220,7 +156,7 @@ class PageTests(TestCase):
         self.assertRedirects(response, str(reverse('wikiserver:user-login')) + "?next=/wiki/page/create/")
 
 
-    def test_page_creation_title_failure(self):
+    def test_page_creation_failure(self):
         """
         test invalid title
         """
@@ -229,7 +165,7 @@ class PageTests(TestCase):
                                'password':'password',
                                'verifyPassword':'password'})
 
-        # no title
+        # missing field
         response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'content':'And even better content.'})
         self.assertEqual(response.status_code, 400)
@@ -238,21 +174,6 @@ class PageTests(TestCase):
         response = self.client.post(reverse('wikiserver:page-create'),
                                     data={'title':'',
                                           'content':'And even better content.'})
-        self.assertEqual(response.status_code, 400)
-
-
-    def test_page_creation_content_failure(self):
-        """
-        test invalid content
-        """
-        self.client.post(reverse('wikiserver:user-join'),
-                         data={'username':'uniquename',
-                               'password':'password',
-                               'verifyPassword':'password'})
-
-        # no content
-        response = self.client.post(reverse('wikiserver:page-create'),
-                                    data={'title':'A Great Title'})
         self.assertEqual(response.status_code, 400)
 
         # blank content
@@ -280,6 +201,10 @@ class PageTests(TestCase):
         self.assertRedirects(response, reverse('wikiserver:page-view', args=(1,)))
         self.assertEquals(Page.objects.filter(id=1).count(), 1)
 
+        pages = Page.objects.filter(title=t)
+        response = self.client.get(reverse('wikiserver:page-view', args=(pages[0].id,)))
+        self.assertEquals(response.status_code, 200)
+
 
     def test_page_view_failure(self):
         """
@@ -290,24 +215,14 @@ class PageTests(TestCase):
         self.assertEquals(response.status_code, 404)
 
 
-    def test_page_view_success(self):
+    def test_page_edit_login_required(self):
         """
-        test successful page view
+        test page creation failure when not logged in
         """
-        response = self.client.post(reverse('wikiserver:user-join'),
-                                    data={'username':'uniquename',
-                                          'password':'password',
-                                          'verifyPassword':'password'})
-
-        t = 'A Great Title'
-        c = 'And even better content'
-        response = self.client.post(reverse('wikiserver:page-create'),
-                                    data={'title':t,
-                                          'content':c})
-
-        pages = Page.objects.filter(title=t)
-        response = self.client.get(reverse('wikiserver:page-view', args=(pages[0].id,)))
-        self.assertEquals(response.status_code, 200)
+        response = self.client.post(reverse('wikiserver:page-edit', args=(1,)),
+                                    data={'title':'A Good Title',
+                                          'content':'And even better content.'})
+        self.assertRedirects(response, str(reverse('wikiserver:user-login')) + "?next=/wiki/page/1/edit/")
 
 
     def test_page_edit_failure(self):
@@ -328,6 +243,25 @@ class PageTests(TestCase):
         pages = Page.objects.filter(title=t)
         pid = pages[0].id
 
+        # can't leave title blank
+        response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
+                                    data={'title':'',
+                                          'content':c})
+        self.assertEquals(response.status_code, 400)
+
+        # can't leave content blank
+        response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
+                                    data={'title':t,
+                                          'content':''})
+        self.assertEquals(response.status_code, 400)
+
+        # page doesn't exist
+        response = self.client.post(reverse('wikiserver:page-edit', args=(123456,)),
+                                    data={'title':t,
+                                          'content':''})
+        self.assertEquals(response.status_code, 404)
+
+        # only original author can edit their page
         self.client.get(reverse('wikiserver:user-logout'))
         self.client.post(reverse('wikiserver:user-join'),
                          data={'username':'otheruser',
@@ -337,31 +271,8 @@ class PageTests(TestCase):
         response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
                                     data={'title':'A Brand New Title',
                                           'content':c})
-        # only original author can edit their page
+
         self.assertEquals(response.status_code, 403)
-
-        self.client.get(reverse('wikiserver:user-logout'))
-        self.client.post(reverse('wikiserver:user-login'),
-                         data={'username':'uniquename',
-                               'password':'password'})
-
-        response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
-                                    data={'title':'',
-                                          'content':c})
-        # can't leave title blank
-        self.assertEquals(response.status_code, 400)
-
-        response = self.client.post(reverse('wikiserver:page-edit', args=(pid,)),
-                                    data={'title':t,
-                                          'content':''})
-        # can't leave content blank
-        self.assertEquals(response.status_code, 400)
-
-        response = self.client.post(reverse('wikiserver:page-edit', args=(123456,)),
-                                    data={'title':t,
-                                          'content':''})
-        # page doesn't exist
-        self.assertEquals(response.status_code, 404)
 
 
     def test_page_edit_success(self):
