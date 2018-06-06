@@ -14,6 +14,9 @@ from .util import CreateUserValidation, FormValidation, PageUtil
 from .models import Page, Page_Version
 import requests
 
+from difflib import HtmlDiff
+import diff_match_patch as dmp_module
+
 
 def IndexView(request):
     """
@@ -191,7 +194,9 @@ def PageView(request, pageid):
         'username': request.user.username,
         'canEdit': False,
         'page': {},
-        'markdownAvailable': True
+        'markdownAvailable': True,
+        'diff': '',
+        'original': '',
     }
 
     try:
@@ -204,7 +209,7 @@ def PageView(request, pageid):
 
     try:
         headers = {'Content-Type': 'text/plain'}
-        data = context['page'].content
+        data = context['original'] = context['page'].content
         md = requests.post('https://api.github.com/markdown/raw', headers=headers, data=data)
         if md.status_code < 300:
             context['page'].content = md.text
@@ -214,6 +219,15 @@ def PageView(request, pageid):
     except requests.exceptions.RequestException as e:
         context['markdownAvailable'] = False
         print('error: %s' % (e,))
+
+    # get diff if available
+    latestVersion = PageUtil.getLatestVersion(pageid)
+    if latestVersion is not None:
+        # get diff
+        dmp = dmp_module.diff_match_patch()
+        diff = dmp.diff_main(latestVersion.content, context['original'])
+        dmp.diff_cleanupSemantic(diff)
+        context['diff'] = dmp.diff_prettyHtml(diff)
 
     return render(request, 'wikiserver/page-view.html', context)
 
@@ -235,7 +249,7 @@ def PageList(request, chapter):
     numOfPages = len(allPages)
 
     # number of pages to display per chapter (list-page)
-    chapterSize = 2
+    chapterSize = 5
 
     # get the total number of chapters
     numOfChapters = numOfPages / chapterSize
@@ -386,5 +400,41 @@ def PageVersionList(request, pageid, chapter):
 
 
 @login_required
-def PageVersionView(request, pageid, versionid):
-    return render(request, 'wikiserver/page-version-view.html')
+def PageVersionView(request, pageid, version):
+    """
+    View a diff of the given version and the previous version
+    """
+
+    context = {
+        'username': request.user.username,
+        'pageVersion': [],
+        'pid': pageid,
+        'diff': '',
+        'versionView': True
+    }
+
+    # check pageid
+    try:
+        page = Page.objects.get(id=pageid)
+    except Page.DoesNotExist:
+        raise Http404("Page does not exist")
+
+    # check version
+    try:
+        pageVersion = Page_Version.objects.get(page_id=pageid, version=version)
+    except Page_Version.DoesNotExist:
+        raise Http404("Version does not exist")
+
+    if pageVersion.version == 1:
+        # just display this page version
+        context['pageVersion'] = pageVersion
+    else:
+        # get previous page version
+        prevPageVersion = Page_Version.objects.get(page_id=pageid, version=int(version) - 1)
+        # get diff
+        dmp = dmp_module.diff_match_patch()
+        diff = dmp.diff_main(prevPageVersion.content, pageVersion.content)
+        dmp.diff_cleanupSemantic(diff)
+        context['diff'] = dmp.diff_prettyHtml(diff)
+
+    return render(request, 'wikiserver/page-version-view.html', context)

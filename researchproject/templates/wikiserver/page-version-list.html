@@ -2,9 +2,10 @@
 {% block 'body' %}
 
 <h3>Previous Versions of This Page</h3>
+<a href="{% url 'wikiserver:page-view' pageid=pid %}">back to current version</a>
 <ul>
 {% for v in versionsToDisplay %}
-  <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-version-view' pageid=v.page_id versionid=v.version %}">{{v.version}}: {{v.date_edited}}</a></li>
+  <li style="margin-bottom:10px;"><a href="{% url 'wikiserver:page-version-view' pageid=v.page_id version=v.version %}">{{v.version}}: {{v.date_edited}}</a></li>
 {% endfor %}
 </ul>
 

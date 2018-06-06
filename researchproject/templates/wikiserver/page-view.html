@@ -3,7 +3,14 @@
 
 <h2>{{page.title}}</h2>
 <h5>by {{page.owner.username}}</h5>
+
+<div id="content">
 <p>{{page.content | safe}}</p>
+</div>
+<div id="diff" style="display:none;">
+<p>{{diff | safe}}</p>
+</div>
+
 <br>
 <br>
 <div>
@@ -14,7 +21,25 @@
 
 {% if canEdit %}
 <a href="{% url 'wikiserver:page-edit' pageid=page.id %}">Edit</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+<a id="diff-btn" href="javascript:void(0)">Diff</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="{% url 'wikiserver:page-version-list' pageid=page.id chapter=1 %}">Previous Versions</a>
+{% elif versionView %}
+<a id="diff-btn" href="javascript:void(0)">Diff</a>
 {% endif %}
+
+<script>
+  $(document).ready(function() {
+    $("#diff-btn").click(function() {
+      if (document.getElementById("diff").style.display === "block") {
+        document.getElementById("diff").style.display = "none";
+        document.getElementById("content").style.display = "block";
+      }
+      else {
+        document.getElementById("diff").style.display = "block";
+        document.getElementById("content").style.display = "none";
+      }
+    });
+  });
+</script>
 
 {% endblock %}

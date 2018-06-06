@@ -2,6 +2,9 @@
 {% block 'body' %}
 
 <h3>View Version</h3>
-
+<a href="{% url 'wikiserver:page-version-list' pageid=pid chapter=1 %}">back to version list</a>
+<br>
+<br>
+{{diff | safe}}
 
 {% endblock %}
