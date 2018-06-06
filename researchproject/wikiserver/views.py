@@ -410,7 +410,7 @@ def PageVersionView(request, pageid, version):
         'pageVersion': [],
         'pid': pageid,
         'diff': '',
-        'versionView': True
+        'title': ''
     }
 
     # check pageid
@@ -421,19 +421,16 @@ def PageVersionView(request, pageid, version):
 
     # check version
     try:
-        pageVersion = Page_Version.objects.get(page_id=pageid, version=version)
+        context['pageVersion'] = Page_Version.objects.get(page_id=pageid, version=version)
     except Page_Version.DoesNotExist:
         raise Http404("Version does not exist")
 
-    if pageVersion.version == 1:
-        # just display this page version
-        context['pageVersion'] = pageVersion
-    else:
+    if context['pageVersion'].version != 1:
         # get previous page version
         prevPageVersion = Page_Version.objects.get(page_id=pageid, version=int(version) - 1)
         # get diff
         dmp = dmp_module.diff_match_patch()
-        diff = dmp.diff_main(prevPageVersion.content, pageVersion.content)
+        diff = dmp.diff_main(prevPageVersion.content, context['pageVersion'].content)
         dmp.diff_cleanupSemantic(diff)
         context['diff'] = dmp.diff_prettyHtml(diff)
 

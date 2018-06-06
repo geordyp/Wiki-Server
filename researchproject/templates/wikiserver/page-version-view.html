@@ -5,6 +5,33 @@
 <a href="{% url 'wikiserver:page-version-list' pageid=pid chapter=1 %}">back to version list</a>
 <br>
 <br>
-{{diff | safe}}
+<h4>Version {{pageVersion.version}}<h4>
+<div id="content">
+<p>{{pageVersion.content | safe}}</p>
+</div>
+<div id="diff" style="display:none;">
+<p>{{diff | safe}}</p>
+</div>
+<br>
+<br>
+
+{% if diff %}
+<a id="diff-btn" href="javascript:void(0)">Diff</a>
+{% endif %}
+
+<script>
+  $(document).ready(function() {
+    $("#diff-btn").click(function() {
+      if (document.getElementById("diff").style.display === "block") {
+        document.getElementById("diff").style.display = "none";
+        document.getElementById("content").style.display = "block";
+      }
+      else {
+        document.getElementById("diff").style.display = "block";
+        document.getElementById("content").style.display = "none";
+      }
+    });
+  });
+</script>
 
 {% endblock %}

@@ -23,8 +23,6 @@
 <a href="{% url 'wikiserver:page-edit' pageid=page.id %}">Edit</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 <a id="diff-btn" href="javascript:void(0)">Diff</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="{% url 'wikiserver:page-version-list' pageid=page.id chapter=1 %}">Previous Versions</a>
-{% elif versionView %}
-<a id="diff-btn" href="javascript:void(0)">Diff</a>
 {% endif %}
 
 <script>
